@@ -1,0 +1,72 @@
+\documentclass[a4paper,12pt,oneside,notitlepage,onecolumn]{article}
+
+\usepackage{ucs}
+\usepackage[utf8x]{inputenc}
+
+\usepackage{fontenc}
+\usepackage{graphicx}
+
+\usepackage[OT4]{fontenc}
+\usepackage[polish]{babel}
+\usepackage{polski}
+\usepackage{indentfirst}
+\usepackage{graphics}
+
+\usepackage[dvips]{hyperref}
+
+\author{Michał Bobowski, Zofia Abramowska, Jakub Meller}
+\title{Dokumentacja do projektu AgentChess}
+
+\begin{document}
+  \maketitle
+\section{Założenia wstępne}
+Niniejszy projekt jest realizowany w ramach przedmiotu SAG.
+Jego przedmiotem jest stworzenie prostego, bazującego na agentowym podejściu, modelu sztucznej inteligencji służącej do gry w szachy.
+Silnik gry i warstwa graficzna zostaną oparte na istniejących rozwiązaniach.
+Całość zostanie zrealizowana w języku programowania Scala.
+
+Dla uporządkowania wiedzy dziedzinowej posługujemy się nazwami figur w wesji polskiej i angielskiej.
+Są to kolejno:
+\begin{itemize}
+ \item Pion (ang. Pawn) - porusza się o jedno pole naprzód (ew. o dwa pola na początku), bije tylko po skosie.
+ \item Skoczek (ang. Knight) - porusza się systemem dwa pola naprzód i jedno do boku w dowolnym kierunku.
+ \item Goniec (ang. Bishop) - porusza się po skosie.
+ \item Wieża (ang. Rook) - porusza się w pionie lub poziomie.
+ \item Hetman (ang. Queen) - łączy ruchy wieży i gońca.
+ \item Król (ang. King) - porusza się o jedno pole w dowolnym kierunku.
+\end{itemize}
+
+
+\section{Opis algorytmu}
+Główną cechą niniejszego algorytmu jest jego zorientowanie na agentowość.
+Bezcelowe jest porównywanie go do algorytmów budujących drzewo rozwiązań, gdyż na pewno są one wydajniejsze.
+Sukcesem projektu będzie stworzenie grywalnego, działającego w rozsądnym czasie programu.
+
+\subsection{Architektura agentów}
+Agenci są umieszczeni w architekturze wertykalnej.
+Głównym mózgiem przedsięwzięcia jest super-agent, którego zdaniem jest wysyłanie żądań do agentów podrzędnych i przeprowadzanie wnioskowania dotyczącego wyboru ruchu.
+
+Na niższym poziomie w hierarchii znajdują się agenci reprezentujący figury obsługiwane przez komputer.
+Można rozważyć również stworzenie agentów dla figur obsługiwanych przez gracza, ale nie wydaje się to w tym momencie zasadne.
+W kolejnych częściach opisany jest szczegółowy protokół komunikacji między agentami.
+
+\subsection{Struktury pomocnicze algorytmu}
+W tej sekcji zawarty jest opis pewnych abstrakcyjnych bytów, na podstawie których przeprowadzane jest wnioskowanie.
+
+\subsubsection{Ocena heurystyczna}
+Każda z figur biorących udział w grze posiada heurystyczną ocenę swojej przydatności, oznaczaną dalej jako H.
+Nie czuję się specjalistą, ale wikipedia proponuje następującą wycenę:
+\begin{itemize}
+ \item H=1 dla piona.
+ \item H=3 dla skoczka i gońca.
+ \item H=5 dla wieży.
+ \item H=9 dla hetmana.
+\end{itemize}
+
+Do kompletu dodany zostaje król z wyceną równą np. H=20.
+
+\subsubsection{Mapa ruchu wroga}
+Mapa ruchu wroga ma za zadanie pokazać w łatwo dostępnej formie, gdzie i jakimi figurami może ruszyć się przeciwnik w pewnej konkretnej sytuacji na planszy.
+Zakładam, że 
+
+\end{document}
