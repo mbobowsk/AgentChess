@@ -62,10 +62,10 @@ W tej sekcji zawarty jest opis pewnych abstrakcyjnych bytów, na podstawie któr
 Każda z figur biorących udział w grze posiada heurystyczną ocenę swojej przydatności, oznaczaną dalej jako H.
 Nie czuję się specjalistą, ale wikipedia proponuje następującą wycenę:
 \begin{itemize}
- \item H=1 dla piona.
- \item H=3 dla skoczka i gońca.
- \item H=5 dla wieży.
- \item H=9 dla hetmana.
+ \item H=1 dla piona
+ \item H=3 dla skoczka i gońca
+ \item H=5 dla wieży
+ \item H=9 dla hetmana
 \end{itemize}
 
 Do kompletu dodany zostaje król z wyceną równą np. H=20.
@@ -77,7 +77,43 @@ Od strony programistycznej mapa ruchu wroga jest mapą, w której kluczem jest p
 
 \subsubsection{Mapa wsparcia wroga}
 Wprowadzam relację wsparcia zdefiniowaną w następujący sposób: figura A wspiera figurę B, jeśli w przypadku zbicia B, A może w kolejnym ruchu dokonać bicia na polu zajmowanym wcześniej przez B.
-Mapa wsparcia ma za zadanie zagregować informacje dotyczące wzajemnego wsparcia figur wroga.
+Mapa wsparcia ma za zadanie zagregować informacje dotyczące wzajemnego położenia figur wroga.
 Kluczem mapy jest identyfikator figury wspieranej, a wartością lista identyfikatorów figur wspierających.
+
+\subsection{Faza pierwsza - odpytanie o ruchy}
+Algorytm rozpoczyna super-agent, który zadaje każdemu agentowi podrzędnemu pytanie o możliwe ruchy.
+Odpowiedzią na żądanie jest lista ruchów, które mogą być wykonane zgodnie z zasadami gry.
+W tym przypadku bicie jest również traktowane jako normalny ruch.
+
+Struktura danych reprezentująca ruch powinna zawierać następujące dane:
+\begin{itemize}
+ \item Identyfikator figury
+ \item Pole początkowe (source)
+ \item Pole końcowe (destination)
+ \item Wstępną ocenę heurystyczną ruchu
+\end{itemize}
+
+Wstępna ocena heurystyczna ma domyślnie wartość 0.
+Jedynie w przypadku bicia przyjmuje wartość równą wartości ofiary.
+
+\subsection{Faza druga - ocena ruchów}
+Każdy ruch podlega ocenie przez wszystkich agentów, wliczając w to agenta zmieniającego położenie.
+Faza oceny pojedynczego ruchu przebiega według następującego schematu:
+\begin{enumerate}
+ \item Super-agent odtwarza stan planszy po wykonaniu ruchu
+ \item Super-agent buduje dla nowego stanu mapę ruchu wroga i mapę wsparcia wroga
+ \item Super-agent wysyła do agentów podrzędnych pytanie o subiektywną ocenę swojego położenia
+\end{enumerate}
+
+Agenci podrzędni wyrażają swoją ocenę sytuacji w sposób egoistyczny tzn. nie interesują się pozostałymi agentami.
+Ocena sytuacji jest wyrażana liczbowo i jest sumą dwóch składowych: ofensywnej i defensywnej.
+
+Składowa ofensywna jest równa najwyższej ocenie figury wroga, znajdującej się w zasięgu rażenia.
+Jeżeli figura wroga jest wspierana przez jakąkolwiek inną figurę, to składową ofensywną pomniejszamy o wartość naszej figury.
+
+Składowa defensywna jest równa ujemnej wartości naszej figury, w przypadku gdy może ona zostać zbita (wykorzystujemy mapę ruchu wroga).
+Jeśli zagrożenie nie występuje, to składowa defensywna ma wartość 0.
+
+\subsection{Faza trzecia - wybór ruchu}
 
 \end{document}

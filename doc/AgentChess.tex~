@@ -106,10 +106,9 @@ Faza oceny pojedynczego ruchu przebiega według następującego schematu:
 \end{enumerate}
 
 Agenci podrzędni wyrażają swoją ocenę sytuacji w sposób egoistyczny tzn. nie interesują się pozostałymi agentami.
-Ocena sytuacji jest wyrażana liczbowo w zależności od okoliczności.
+Ocena sytuacji jest wyrażana liczbowo i jest sumą dwóch składowych: ofensywnej i defensywnej.
+Składowa ofensywna jest równa maksymalnej ocenie heurystycznej figury, którą
 
-Pierwszym przypadkiem jest ocena neutralna wynosząca 0.
-Ma ona miejsce kiedy żadna figura przeciwnika nie zagraża
 
 
 \subsection{Faza trzecia - wybór ruchu}
