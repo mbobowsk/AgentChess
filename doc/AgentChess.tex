@@ -115,5 +115,16 @@ Składowa defensywna jest równa ujemnej wartości naszej figury, w przypadku gd
 Jeśli zagrożenie nie występuje, to składowa defensywna ma wartość 0.
 
 \subsection{Faza trzecia - wybór ruchu}
+Po skompletowaniu ocen cząstkowych, super-agent podejmuje decyzję o wyborze ruchu.
+Całkowita ocena ruchu jest sumą ocen z faz pierwszej i drugiej.
+Wybrany zostaje ruch z najwyższą oceną sumaryczną lub jeden z najlepszych ruchów.
+
+\subsection{Opcjonalne modyfikacje}
+Trudno na etapie planowania ocenić całkowity czas oczekiwania na ruch, ale na pewno nie powinien on przekraczać minuty.
+Jeśli w podstawowym wariancie nie będzie to możliwe, należy ograniczyć liczbę ruchów, podlegających ocenie w fazie drugiej.
+Na przykład po fazie pierwszej można pozostawić 5 najlepszych i 5 losowych ruchów.
+
+Drugą opcjonalną modyfikacją jest dodanie do oceny w fazie trzeciej, średniej z ocen składowych wszystkich agentów.
+Może to spowodować poprawę działania algorytmu, ale równie dobrze może coś popsuć.
 
 \end{document}
