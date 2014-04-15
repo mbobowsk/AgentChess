@@ -1,12 +1,23 @@
 package agent
 import chess._
+import scala.actors.Actor
 
-object PawnAgent {
-  private var counter = 1
-  private def inc {counter += 1}
-}
-
-class PawnAgent(override val field :Field) extends FigureAgent(field) {
-	val id:String = "pawn" + PawnAgent.counter;
-	PawnAgent.inc;
+class PawnAgent(override val field: Field) extends FigureAgent(field, 'p') {
+	
+	def act {
+		println("Start: " + id)
+		await
+	}
+	
+	private def await {	  
+	  loop {
+	    react {
+	      case 'allMoves => {
+	        println("Got 'allMmoves from superAgent")
+	        reply(1)
+	      }
+	      case _ => println("Unknown msg")
+	    }
+	  }
+	}
 }

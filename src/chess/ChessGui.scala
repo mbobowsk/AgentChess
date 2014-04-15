@@ -3,7 +3,7 @@ package chess
 import swing._
 import actors.Actor
 import java.awt.{Rectangle,Font}
-import agent.SuperAgent
+import agent.Proxy
 
 object PlayWhite extends App(White)
 object PlayBlack extends App(Black)
@@ -37,8 +37,9 @@ class GamePanel(playerColor: Color) extends Panel {
               if (game.isGameFinished) gameOver
               else Actor.actor {
                 // Tutaj podpinamy naszego super-agenta
-                val superAgent = new SuperAgent(game)
-                // val newGame = superAgent.makeMove
+                val proxy = new Proxy(game)
+                proxy.makeMove
+                //val newGame = proxy.makeMove
                 val newGame = game.makeMove
                 if (newGame == None) gameOver
                 else Swing.onEDT { game = newGame.get; repaint}}}}}
