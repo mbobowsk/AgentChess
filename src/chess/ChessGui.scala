@@ -1,6 +1,9 @@
 package chess
 
-import swing._, actors.Actor, java.awt.{Rectangle,Font}
+import swing._
+import actors.Actor
+import java.awt.{Rectangle,Font}
+import agent.SuperAgent
 
 object PlayWhite extends App(White)
 object PlayBlack extends App(Black)
@@ -33,6 +36,9 @@ class GamePanel(playerColor: Color) extends Panel {
               repaint
               if (game.isGameFinished) gameOver
               else Actor.actor {
+                // Tutaj podpinamy naszego super-agenta
+                val superAgent = new SuperAgent(game)
+                // val newGame = superAgent.makeMove
                 val newGame = game.makeMove
                 if (newGame == None) gameOver
                 else Swing.onEDT { game = newGame.get; repaint}}}}}
