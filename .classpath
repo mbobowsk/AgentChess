@@ -2,6 +2,15 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="con" path="org.scala-ide.sdt.launching.SCALA_CONTAINER"/>
+	<classpathentry kind="lib" path="lib/akka-actors.jar"/>
+	<classpathentry kind="lib" path="lib/jline.jar"/>
+	<classpathentry kind="lib" path="lib/scala-actors-migration.jar"/>
+	<classpathentry kind="lib" path="lib/scala-actors.jar"/>
+	<classpathentry kind="lib" path="lib/scala-compiler.jar"/>
+	<classpathentry kind="lib" path="lib/scala-library.jar"/>
+	<classpathentry kind="lib" path="lib/scala-reflect.jar"/>
+	<classpathentry kind="lib" path="lib/scala-swing.jar"/>
+	<classpathentry kind="lib" path="lib/scalap.jar"/>
+	<classpathentry kind="lib" path="lib/typesafe-config.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

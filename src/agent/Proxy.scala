@@ -4,12 +4,16 @@
  */
 package agent
 import chess._
+import akka.actor._
 
 class Proxy(game: Game) {
-	val agents = createFigureAgents(game);
-	agents.foreach(a => println(a.id))
+  
+	val system = ActorSystem("TestSystem")
+  
+	//val agents = createFigureAgents(game);
+	//agents.foreach(a => println(a.id))
 
-	val superAgent :SuperAgent = new SuperAgent(game, agents)
+	//val superAgent :SuperAgent = new SuperAgent(game, agents)
 
 
 	def createFigureAgents(game: Game): List[FigureAgent] = {
@@ -17,7 +21,8 @@ class Proxy(game: Game) {
 
 			for ((field, figure) <- game.board.iterator; if figure.color == game.color) {
 				figure match {
-				case _:Pawn => agents = new PawnAgent(field) :: agents
+				//case _:Pawn => agents = new PawnAgent(field) :: agents
+				case _:Pawn => println("Pawn")
 				case _:Rook => println("Rook")
 				case _:Knight => println("Knight")
 				case _:Bishop => println("Bishop")
@@ -30,9 +35,6 @@ class Proxy(game: Game) {
 	}
 
 	def makeMove {
-		for (a <- agents) {
-			a.start()
-		}
-		superAgent.start()
+		
 	}
 }

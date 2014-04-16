@@ -126,4 +126,10 @@ Na przykład po fazie pierwszej można pozostawić 5 najlepszych i 5 losowych ru
 Drugą opcjonalną modyfikacją jest dodanie do oceny w fazie trzeciej, średniej z ocen składowych wszystkich agentów.
 Może to spowodować poprawę działania algorytmu, ale równie dobrze może coś popsuć.
 
+\section{Uwagi techniczne - przeczytaj zanim zaczniesz kodować}
+Chciałbym zwrócić w tej sekcji uwagę na kilka ważnych problemów z którymi miałem do czynienia.
+Po pierwsze - istnieje duża różnica między bibliotekami Scala Actors i Scala Akka, choć na pierwszy rzut oka wyglądają tak samo.
+My korzystamy TYLKO z biblioteki Scala Akka, która od wersji języka 2.11 zastąpi Scala Actors.
+Ponieważ najnowszym wydaniem stabilnym języka Scala jest wersja 2.10 to musiałem ręcznie dodać sporo plików jar do java build path (cały folder /lib).
+
 \end{document}

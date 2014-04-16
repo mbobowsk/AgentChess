@@ -1,7 +1,16 @@
 package agent
 import chess._
-import scala.actors.Actor
+import akka.actor._
 
 abstract class FigureAgent(val field: Field, val id: Char) extends Actor {
 	
+	def receive = {
+	  case GetMoves => {
+	    sender ! ReturnMoves(myMoves)
+	  }
+	}
+	
+	def myMoves = {
+	  List[Move]()
+	}
 }

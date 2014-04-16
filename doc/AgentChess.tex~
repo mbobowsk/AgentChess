@@ -37,10 +37,9 @@ Są to kolejno:
  \item Król (ang. King) - porusza się o jedno pole w dowolnym kierunku.
 \end{itemize}
 
-Na potrzeby projektu każda konkretna figura będzie posiadała unikalny identyfikator, składający się z jednego lub dwóch znaków.
-Pierwszym znakiem identyfikatora jest pierwsza litera angielskiej nazwy, za wyjątkiem skoczka, który z przyczyn oczywistych przyjmie drugą literę tj. 'n'.
-Dla rozróżnienia kolorów, figury czarne będą w przeciwieństwie do figur białych używały wielkich liter.
-Drugi znak identyfikatora jest po prostu liczbą i nie występuje dla króla i hetmana.
+Figury są identyfikowane wewnątrz programu przy pomocy małej (białe) bądź wielkiej (czarne) litery.
+Dla większości figur identyfikatorem jest pierwsza litera angielskiej nazwy.
+Wyjątek stanowi skoczek, który posługuje się drugą literą (n).
 
 \section{Opis algorytmu}
 Główną cechą niniejszego algorytmu jest jego zorientowanie na agentowość.
@@ -126,5 +125,15 @@ Na przykład po fazie pierwszej można pozostawić 5 najlepszych i 5 losowych ru
 
 Drugą opcjonalną modyfikacją jest dodanie do oceny w fazie trzeciej, średniej z ocen składowych wszystkich agentów.
 Może to spowodować poprawę działania algorytmu, ale równie dobrze może coś popsuć.
+
+\section{Uwagi techniczne - przeczytaj zanim zaczniesz kodować}
+Chciałbym zwrócić w tej sekcji uwagę na kilka ważnych problemów z którymi miałem do czynienia.
+Po pierwsze - istnieje duża różnica między bibliotekami Scala Actors i Scala Akka, choć na pierwszy rzut oka wyglądają tak samo.
+My korzystamy TYLKO z biblioteki Scala Akka, która od wersji języka 2.11 zastąpi Scala Actors.
+Ponieważ najnowszym wydaniem stabilnym języka Scala jest wersja 2.10 to musiałem ręcznie dodać plik akka-actors.jar do java build path projektu.
+
+
+
+
 
 \end{document}
