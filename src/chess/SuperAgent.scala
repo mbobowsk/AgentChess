@@ -1,4 +1,4 @@
-package agent
+package chess
 import chess._
 import akka.actor._
 import scala.collection.mutable.Buffer
@@ -14,10 +14,10 @@ class SuperAgent(val listener: ActorRef, val color: Color) extends Actor {
 		val refs = Buffer[ActorRef]();
 		color match {
 			case White => {
-				refs += context.actorOf(Props(new PawnAgent('a2)));
+				refs += context.actorOf(Props(new PawnAgent('a2, color)));
 			}
 			case Black => {
-				refs += context.actorOf(Props(new PawnAgent('a7)));
+				refs += context.actorOf(Props(new PawnAgent('a7, color)));
 			}
 		}
 		return refs;

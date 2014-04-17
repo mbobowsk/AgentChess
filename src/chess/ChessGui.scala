@@ -3,7 +3,6 @@ package chess
 import swing._
 import java.awt.{Rectangle,Font}
 import akka.actor._
-import agent._
 
 object PlayWhite extends App(White)
 object PlayBlack extends App(Black)
