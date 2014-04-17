@@ -5,12 +5,12 @@ import akka.actor._
 abstract class FigureAgent(val field: Field, val id: Char) extends Actor {
 	
 	def receive = {
-	  case GetMoves => {
-	    sender ! ReturnMoves(myMoves)
+	  case GetMoves(game: Game) => {
+	    sender ! ReturnMoves(myMoves(game))
 	  }
 	}
 	
-	def myMoves = {
+	def myMoves(game: Game) = {
 	  List[Move]()
 	}
 }
