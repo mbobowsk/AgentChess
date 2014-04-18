@@ -1,7 +1,7 @@
 package chess
 import akka.actor._
 
-abstract class FigureAgent(var field: Field, val color: Color, val selfValue: Int) extends Actor {
+abstract class FigureAgent(var field: Field, val color: Color, val id: String, val selfValue: Int) extends Actor {
 
 	final def receive = {
 	case GetMoves(game: Game) => {
@@ -10,6 +10,13 @@ abstract class FigureAgent(var field: Field, val color: Color, val selfValue: In
 	case Result(move: Move) => {
 		if (field == move.from) {
 			field = move.to
+		}
+	}
+	case EnemyMove(move: Move) => {
+		if (field == move.to) {
+			sender ! Died(true, id)
+		} else {
+			sender ! Died(false, id)
 		}
 	}
 	}

@@ -2,7 +2,7 @@ package chess
 
 import scala.collection.mutable.ListBuffer
 
-final class PawnAgent(f: Field, c: Color) extends FigureAgent(f, c, 1) {
+final class PawnAgent(f: Field, c: Color, override val id: String) extends FigureAgent(f, c, id, 1) {
 
 	val k = {
 		color match {
