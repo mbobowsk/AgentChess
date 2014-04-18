@@ -5,6 +5,12 @@ sealed class Message
 
 // Komunikat uruchamiający pracę super agenta
 case class MakeMove(game: Game) extends Message
+
+// Komunikat informujący o pierwszym ruchu
+// Kiedy komputer gra białymi, to pierwszy ruch wykonujemy wg domyślnego AI
+// Należy wtedy zaktualizować pozycję agenta w stosunku do pozycji początkowej
+case class FirstMove(move: Move) extends Message
+
 // Faza 1 - ustalenie ruchów
 case class GetMoves(game: Game) extends Message
 case class ReturnMoves(moves: List[Move]) extends Message

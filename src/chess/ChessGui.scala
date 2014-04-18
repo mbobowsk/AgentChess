@@ -20,12 +20,17 @@ class GamePanel(playerColor: Color) extends Panel {
 	val listener = system.actorOf(Props(new Listener), name = "Listener")
 	val superAgent = system.actorOf(Props(new SuperAgent(listener, playerColor.other)), name = "SuperAgent")
 
-
-	private[this] var game =
-	if (playerColor == White) GameStart else GameStart.makeMove.get
+	private[this] var game = if (playerColor == White) GameStart else GameStart.makeMove.get
 	private[this] var selectedField: Option[Field] = None
 	preferredSize = new Dimension(450,450)
 	def fieldSize = (size.width min size.height)/9
+	
+	if (playerColor == Black) {
+		game match {
+			case g :OngoingGame => (superAgent ! FirstMove(new Move(g.lastMove._1, g.lastMove._2, 0)))
+		}
+		
+	}
 
 	listenTo(mouse.clicks)
 	reactions += {
