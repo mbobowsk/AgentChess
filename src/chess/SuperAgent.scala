@@ -6,7 +6,7 @@ import scala.collection.mutable.Buffer
 class SuperAgent(val listener: ActorRef, val color: Color) extends Actor {
 
 	val agents: scala.collection.mutable.Map[String, ActorRef] = createFigureAgents();
-	var agentsAlive = 8;
+	var agentsAlive = 9;
 	var moves = List[Move]()
 	var movesReported = 0;
 	var deathsReported = 0;
@@ -24,6 +24,7 @@ class SuperAgent(val listener: ActorRef, val color: Color) extends Actor {
 				refs.put("p6", context.actorOf(Props(new PawnAgent('f2, color, "p6"))));
 				refs.put("p7", context.actorOf(Props(new PawnAgent('g2, color, "p7"))));
 				refs.put("p8", context.actorOf(Props(new PawnAgent('h2, color, "p8"))));
+				refs.put("k", context.actorOf(Props(new KingAgent('e1, color, "k"))));
 			}
 			case Black => {
 				refs.put("p1", context.actorOf(Props(new PawnAgent('a7, color, "p1"))));
@@ -34,6 +35,7 @@ class SuperAgent(val listener: ActorRef, val color: Color) extends Actor {
 				refs.put("p6", context.actorOf(Props(new PawnAgent('f7, color, "p6"))));
 				refs.put("p7", context.actorOf(Props(new PawnAgent('g7, color, "p7"))));
 				refs.put("p8", context.actorOf(Props(new PawnAgent('h7, color, "p8"))));
+				refs.put("k", context.actorOf(Props(new KingAgent('e8, color, "k"))));
 			}
 		}
 		refs
@@ -47,11 +49,10 @@ class SuperAgent(val listener: ActorRef, val color: Color) extends Actor {
 	}
 
 	def receive = {
-		case FirstMove(move: Move) => {
-			agents.foreach(a => a._2 ! Result(move))
+		case FriendlyMove(move: Move) => {
+			agents.foreach(a => a._2 ! FriendlyMove(move))
 		}
 		case EnemyMove(move: Move) => {
-			println("Enemy move");
 			agents.foreach(a => a._2 ! EnemyMove(move))
 		}
 		case MakeMove(game: Game) => {
@@ -60,18 +61,18 @@ class SuperAgent(val listener: ActorRef, val color: Color) extends Actor {
 		}
 		case DeathReport(hasDied: Boolean, id: String) => {
 			deathsReported += 1
-			println("Died: " + deathsReported);
 			if (hasDied) {
+				print("Died: " + id)
 				agents.remove(id)
 				someoneDied = true
-				if (id == "k")
-					listener ! Lost
+				if (id == "k") {
+					listener ! GameOver(color.other)
+					context.stop(self)
+				}
 			}
 			if (deathsReported == agentsAlive) {
 				if (someoneDied) {
 					agentsAlive -= 1
-					if (agentsAlive == 0)
-						listener ! Lost
 				}
 				listener ! EnemyMoveAck
 			}
@@ -83,7 +84,7 @@ class SuperAgent(val listener: ActorRef, val color: Color) extends Actor {
 			if (movesReported == agentsAlive) {
 				moves = moves sortBy (_.score)
 				listener ! Result(moves.last)
-				agents.foreach(a => a._2 ! Result(moves.last))
+				agents.foreach(a => a._2 ! FriendlyMove(moves.last))
 			}
 		}
 	}

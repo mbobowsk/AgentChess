@@ -7,7 +7,7 @@ abstract class FigureAgent(var field: Field, val color: Color, val id: String, v
 	case GetMoves(game: Game) => {
 		sender ! ReturnMoves(getMoves(game))
 	}
-	case Result(move: Move) => {
+	case FriendlyMove(move: Move) => {
 		if (field == move.from) {
 			field = move.to
 		}
@@ -33,6 +33,5 @@ abstract class FigureAgent(var field: Field, val color: Color, val id: String, v
 	def getMoves(game: Game) = {
 		List[Move]()		
 	}
-
 
 }

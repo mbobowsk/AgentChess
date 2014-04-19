@@ -28,7 +28,7 @@ class GamePanel(playerColor: Color) extends Panel {
 
 	if (playerColor == Black) {
 		game match {
-			case g: OngoingGame => (superAgent ! FirstMove(new Move(g.lastMove._1, g.lastMove._2, 0)))
+			case g: OngoingGame => (superAgent ! FriendlyMove(new Move(g.lastMove._1, g.lastMove._2, 0)))
 		}
 
 	}
@@ -51,9 +51,6 @@ class GamePanel(playerColor: Color) extends Panel {
 								game match {
 									case g: OngoingGame => (superAgent ! EnemyMove(new Move(g.lastMove._1, g.lastMove._2, 0)))
 								}
-								/*val newGame = game.makeMove;
-						if (newGame == None) gameOver
-						else Swing.onEDT { game = newGame.get; repaint}*/
 							}
 						}
 				}
@@ -151,23 +148,21 @@ class GamePanel(playerColor: Color) extends Panel {
 			case EnemyMoveAck => {
 				superAgent ! MakeMove(game)
 			}
-			case Result(move: Move) => {
-				val newGame = game.move(move.from, move.to, promotionFigure(move.from, move.to))
-				newGame match {
-					case None => gameOver(playerColor)
-					case _ => Swing.onEDT { game = newGame.get; repaint }
-				}
+			case Result(move) => {
+				game = game.move(move.from, move.to, promotionFigure(move.from, move.to)).get
+				repaint
 			}
-			case Lost => {
-				gameOver(playerColor.other)
+			case GameOver(winnerColor: Color) => {
+				gameOver(winnerColor)
+				context.system.shutdown()
 			}
 		}
 	}
-	
-	def gameOver(winnerColor: Color) {
+
+	def gameOver(winnerColor: Color) = {
 		deafTo(mouse.clicks)
 		Dialog.showMessage(parent = this, message = "Game over. " +
-				"Winner: " + winnerColor + ".")
-	} 
+			"Winner: " + winnerColor + ".")
+	}
 
 }
