@@ -153,10 +153,21 @@ class GamePanel(playerColor: Color) extends Panel {
 			}
 			case Result(move: Move) => {
 				val newGame = game.move(move.from, move.to, promotionFigure(move.from, move.to))
-				if (newGame == None) { gameOver }
-				else Swing.onEDT { game = newGame.get; repaint }
+				newGame match {
+					case None => gameOver(playerColor)
+					case _ => Swing.onEDT { game = newGame.get; repaint }
+				}
+			}
+			case Lost => {
+				gameOver(playerColor.other)
 			}
 		}
 	}
+	
+	def gameOver(winnerColor: Color) {
+		deafTo(mouse.clicks)
+		Dialog.showMessage(parent = this, message = "Game over. " +
+				"Winner: " + winnerColor + ".")
+	} 
 
 }

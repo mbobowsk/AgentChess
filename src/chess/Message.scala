@@ -16,7 +16,7 @@ case class EnemyMove(move: Move) extends Message
 
 // Odpowiedź agenta na informację o ruchu przeciwnika
 // Wysyłana również wtedy, kiedy agent nie umarł
-case class Died(hasDied: Boolean, id: String)
+case class DeathReport(hasDied: Boolean, id: String) extends Message
 
 // Potwierdzenie uaktualnienia stanu agentów, wysyłane przez super agenta
 case class EnemyMoveAck extends Message
@@ -26,4 +26,5 @@ case class GetMoves(game: Game) extends Message
 case class ReturnMoves(moves: List[Move]) extends Message
 
 // Wynik działania super agenta
-case class Result(move: Move)
+case class Result(move: Move) extends Message
+case class Lost extends Message

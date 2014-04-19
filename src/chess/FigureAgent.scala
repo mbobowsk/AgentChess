@@ -14,9 +14,9 @@ abstract class FigureAgent(var field: Field, val color: Color, val id: String, v
 	}
 	case EnemyMove(move: Move) => {
 		if (field == move.to) {
-			sender ! Died(true, id)
+			sender ! DeathReport(true, id)
 		} else {
-			sender ! Died(false, id)
+			sender ! DeathReport(false, id)
 		}
 	}
 	}
