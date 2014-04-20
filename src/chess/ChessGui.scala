@@ -148,21 +148,40 @@ class GamePanel(playerColor: Color) extends Panel {
 			case EnemyMoveAck => {
 				superAgent ! MakeMove(game)
 			}
-			case Result(move) => {
-				game = game.move(move.from, move.to, promotionFigure(move.from, move.to)).get
+			case Result(moves) => {
+				val chosenMove = tryToMove(moves)
+				chosenMove match {
+					case Some(move) => {
+						game = game.move(move.from, move.to, promotionFigure(move.from, move.to)).get
+						game match {
+							case g: OngoingGame => (superAgent ! FriendlyMove(new Move(g.lastMove._1, g.lastMove._2, 0)))
+						}
+					}
+					case None => gameOver(playerColor)
+				}
 				repaint
-			}
-			case GameOver(winnerColor: Color) => {
-				gameOver(winnerColor)
-				context.system.shutdown()
 			}
 		}
 	}
 
 	def gameOver(winnerColor: Color) = {
+		system.shutdown()
 		deafTo(mouse.clicks)
 		Dialog.showMessage(parent = this, message = "Game over. " +
 			"Winner: " + winnerColor + ".")
+	}
+
+	// Próbuje wykonywać kolejne najlepsze ruchy
+	// Zwraca None jeśli żaden ruch nie jest zgodny z zasadami
+	def tryToMove(moves: List[Move]): Option[Move] = {
+		if (moves.isEmpty)
+			return None
+		val move = moves.head
+		val newGame = game.move(move.from, move.to, promotionFigure(move.from, move.to))
+		newGame match {
+			case Some(g) => Option(move)
+			case None => tryToMove(moves.tail)
+		}
 	}
 
 }

@@ -66,12 +66,21 @@ class GameRules(game: Game) {
       g.lastMove._2 == Field(to.col, from.row) &&
       g.lastMove._1 == Field(to.col, from.row + 2*(to.row-from.row))}
   
-  // Zmiana tych pól pozwala na zakończenie gry zbiciem króla
-  // Brzydki trick, ale działa :(
-  def isOtherKingUnderCheck: Boolean = false
-  def isKingUnderCheck: Boolean = false
-  def isGameFinished = false
-  
+  def isOtherKingUnderCheck: Boolean = !nextMoves.forall(g => g.board.values.
+    exists(fig => fig == King(color.other)))
+  def isKingUnderCheck: Boolean = new OngoingGame(color.other,board,
+    game :: previous).isOtherKingUnderCheck
+  def isGameFinished: Boolean = nextMoves.forall(g => g.isOtherKingUnderCheck) ||
+    Set[Set[Figure]](Set(King(White),King(Black)),
+                     Set(King(White),King(Black),Bishop(White)),
+                     Set(King(White),King(Black),Bishop(Black)),
+                     Set(King(White),King(Black),Knight(White)),
+                     Set(King(White),King(Black),Knight(Black)),
+                     Set(King(White),King(Black),Knight(White),Knight(White)),
+                     Set(King(White),King(Black),Knight(Black),Knight(Black))).
+      contains(game.board.values.toSet) ||
+      !(game.board :: game.previous.map(_.board)).
+        groupBy(n=>n).values.toSet.filter(_.size >= 3).isEmpty
   def winner: Option[Color] = if (isGameFinished && game.isKingUnderCheck)
     Some(color.other) else None
 }

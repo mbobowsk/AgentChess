@@ -22,6 +22,4 @@ case class GetMoves(game: Game) extends Message
 case class ReturnMoves(moves: List[Move]) extends Message
 
 // Wynik działania super agenta
-case class Result(move: Move) extends Message
-
-case class GameOver(winnerColor: Color) extends Message
+case class Result(move: List[Move]) extends Message

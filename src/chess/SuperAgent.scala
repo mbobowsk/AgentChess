@@ -5,8 +5,8 @@ import scala.collection.mutable.Buffer
 
 class SuperAgent(val listener: ActorRef, val color: Color) extends Actor {
 
+	var agentsAlive = 16;
 	val agents: scala.collection.mutable.Map[String, ActorRef] = createFigureAgents();
-	var agentsAlive = 9;
 	var moves = List[Move]()
 	var movesReported = 0;
 	var deathsReported = 0;
@@ -38,6 +38,7 @@ class SuperAgent(val listener: ActorRef, val color: Color) extends Actor {
 				refs.put("k", context.actorOf(Props(new KingAgent('e8, color, "k"))));
 			}
 		}
+		agentsAlive = refs.size
 		refs
 	}
 
@@ -62,13 +63,8 @@ class SuperAgent(val listener: ActorRef, val color: Color) extends Actor {
 		case DeathReport(hasDied: Boolean, id: String) => {
 			deathsReported += 1
 			if (hasDied) {
-				print("Died: " + id)
 				agents.remove(id)
 				someoneDied = true
-				if (id == "k") {
-					listener ! GameOver(color.other)
-					context.stop(self)
-				}
 			}
 			if (deathsReported == agentsAlive) {
 				if (someoneDied) {
@@ -82,9 +78,8 @@ class SuperAgent(val listener: ActorRef, val color: Color) extends Actor {
 			moves = newMoves ::: moves
 			movesReported += 1
 			if (movesReported == agentsAlive) {
-				moves = moves sortBy (_.score)
-				listener ! Result(moves.last)
-				agents.foreach(a => a._2 ! FriendlyMove(moves.last))
+				moves = (moves sortBy (_.score)).reverse
+				listener ! Result(moves)
 			}
 		}
 	}
