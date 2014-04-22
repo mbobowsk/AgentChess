@@ -29,6 +29,9 @@ class SuperAgent(val listener: ActorRef, val color: Color) extends Actor {
 				refs.put("n2", context.actorOf(Props(new KnightAgent('g1, color, "n2"))));
 				refs.put("r1", context.actorOf(Props(new RookAgent('a1, color, "r1"))));
 				refs.put("r2", context.actorOf(Props(new RookAgent('h1, color, "r2"))));
+				refs.put("b1", context.actorOf(Props(new BishopAgent('c1, color, "b1"))));
+				refs.put("b2", context.actorOf(Props(new BishopAgent('f1, color, "b2"))));
+				refs.put("q", context.actorOf(Props(new QueenAgent('d1, color, "q"))));
 			}
 			case Black => {
 				refs.put("p1", context.actorOf(Props(new PawnAgent('a7, color, "p1"))));
@@ -44,6 +47,9 @@ class SuperAgent(val listener: ActorRef, val color: Color) extends Actor {
 				refs.put("n2", context.actorOf(Props(new KnightAgent('g8, color, "n2"))));
 				refs.put("r1", context.actorOf(Props(new RookAgent('a8, color, "r1"))));
 				refs.put("r2", context.actorOf(Props(new RookAgent('h8, color, "r2"))));
+				refs.put("b1", context.actorOf(Props(new BishopAgent('c8, color, "b1"))));
+				refs.put("b2", context.actorOf(Props(new BishopAgent('f8, color, "b2"))));
+				refs.put("q", context.actorOf(Props(new QueenAgent('d8, color, "q"))));
 			}
 		}
 		agentsAlive = refs.size

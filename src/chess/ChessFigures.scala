@@ -1,3 +1,6 @@
+/**
+ * Bazuje na fragmencie książki "Język programowania Scala" (Grzegorz Balcerek)
+ */
 package chess
 
 abstract sealed class Figure(symb: Char, un: Char) {

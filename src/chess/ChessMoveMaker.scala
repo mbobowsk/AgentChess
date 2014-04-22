@@ -1,3 +1,6 @@
+/**
+ * Bazuje na fragmencie książki "Język programowania Scala" (Grzegorz Balcerek)
+ */
 package chess
 
 class MoveMaker(game: Game) {

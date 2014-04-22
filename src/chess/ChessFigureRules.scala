@@ -1,3 +1,7 @@
+/**
+ * Bazuje na fragmencie książki "Język programowania Scala" (Grzegorz Balcerek)
+ */
+ 
 package chess
 import collection.immutable._
 

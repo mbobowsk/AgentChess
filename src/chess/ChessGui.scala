@@ -1,3 +1,6 @@
+/**
+ * Bazuje na fragmencie książki "Język programowania Scala" (Grzegorz Balcerek)
+ */
 package chess
 
 import swing._
@@ -29,6 +32,7 @@ class GamePanel(playerColor: Color) extends Panel {
 	if (playerColor == Black) {
 		game match {
 			case g: OngoingGame => (superAgent ! FriendlyMove(new Move(g.lastMove._1, g.lastMove._2, 0)))
+			case _ => 
 		}
 
 	}
@@ -50,6 +54,7 @@ class GamePanel(playerColor: Color) extends Panel {
 							else {
 								game match {
 									case g: OngoingGame => (superAgent ! EnemyMove(new Move(g.lastMove._1, g.lastMove._2, 0)))
+									case _ =>
 								}
 							}
 						}
@@ -155,6 +160,7 @@ class GamePanel(playerColor: Color) extends Panel {
 						game = game.move(move.from, move.to, promotionFigure(move.from, move.to)).get
 						game match {
 							case g: OngoingGame => (superAgent ! FriendlyMove(new Move(g.lastMove._1, g.lastMove._2, 0)))
+							case _ =>
 						}
 					}
 					case None => gameOver(playerColor)

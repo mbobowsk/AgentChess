@@ -44,6 +44,16 @@ abstract class FigureAgent(var field: Field, val color: Color, val id: String, v
 			case Some(f) if f.color != color => Some(new Move(field, dstField, figureRank(f))) 
 		}
 	}
+	
+	// Zwraca listę wszystkichruchów w pewnym określonym kierunku
+	def moveNext(game: Game, direction: Tuple2[Int, Int], iteration: Int = 1): List[Move] = {
+		val move = moveDirect(game, (direction._1*iteration, direction._2*iteration))
+		move match {
+			case None => List()
+			case Some(m) if(m.score == 0) => m :: moveNext(game, direction, iteration+1)
+			case Some(m) => List(m)
+		}
+	}
 
 	def getMoves(game: Game) = {
 		List[Move]()		
