@@ -11,63 +11,28 @@ final class PawnAgent(f: Field, c: Color, override val id: String) extends Figur
 		}
 	}
 
-	override def getMoves(game: Game): List[Move] = {
-		var acc = List[Move]();
-		acc = moveOneAhead(game, acc)
-		if (!hasMoved)
-			acc = moveTwoAhead(game, acc)
-		acc = moveCrossLeft(game, acc)
-		acc = moveCrossRight(game, acc)
-		acc
-	}
-
-	def moveOneAhead(game: Game, acc: List[Move]) = {
-		val firstAhead: Option[Figure] = game.board.get(field.relative(0, k));
-		if (firstAhead == None)
-			new Move(field, field.relative(0, k), 0) :: acc
-		else
-			acc
-	}
-
-	def moveTwoAhead(game: Game, acc: List[Move]) = {
-		val firstAhead: Option[Figure] = game.board.get(field.relative(0, k));
-		val secondAhead: Option[Figure] = game.board.get(field.relative(0, 2 * k));
-		if (firstAhead == None && secondAhead == None)
-			new Move(field, field.relative(0, 2 * k), 0) :: acc
-		else
-			acc
-	}
-
-	def moveCrossLeft(game: Game, acc: List[Move]) = {
-		if (field.col != 1) {
-			val cross: Option[Figure] = game.board.get(field.relative(-1, k));
-			cross match {
-				case Some(figure) => {
-					if (figure.color != color)
-						new Move(field, field.relative(-1, k), figureRank(figure)) :: acc
-					else
-						acc
-				}
-				case None => acc
-			}
+	override def getMoves(game: Game): List[Move] = {		
+		val oneAhead = moveDirect(game, (0, k))
+		if (oneAhead.isDefined) {
+			if (!hasMoved)
+				return List(oneAhead, moveDirect(game, (0, 2*k)), moveWithCapture(game, (1, k)), moveWithCapture(game, (-1, k))).flatten
+			else
+				return List(oneAhead, moveWithCapture(game, (1, k)), moveWithCapture(game, (-1, k))).flatten	
 		} else
-			acc
+			List(moveWithCapture(game, (1, k)), moveWithCapture(game, (-1, k))).flatten
 	}
-
-	def moveCrossRight(game: Game, acc: List[Move]) = {
-		if (field.col != 8) {
-			val cross: Option[Figure] = game.board.get(field.relative(1, k));
-			cross match {
-				case Some(figure) => {
-					if (figure.color != color)
-						new Move(field, field.relative(1, k), figureRank(figure)) :: acc
-					else
-						acc
-				}
-				case None => acc
-			}
-		} else
-			acc
+	
+	// Działa podobnie jak moveDirect, ale zwraca None jeśli pole jest puste
+	def moveWithCapture(game: Game, moveCoords: Tuple2[Int, Int]): Option[Move] = {
+		val dstField = field.relative(moveCoords._1, moveCoords._2)
+		val isInBoard = (dstField.col <= 8 && dstField.row <= 8 && dstField.col >= 1 && dstField.row >= 1)
+		if (!isInBoard)
+			return None
+		val figure: Option[Figure] = game.board.get(dstField)
+		figure match {
+			case Some(f) if f.color != color => Some(new Move(field, dstField, figureRank(f))) 
+			case _ => None
+		}
 	}
 
 	def hasMoved() = {

@@ -29,6 +29,21 @@ abstract class FigureAgent(var field: Field, val color: Color, val id: String, v
 	case _:Pawn => 1
 	case _ => 0 
 	}
+	
+	// Próbuje wykonać ruch bezpośrednio do pola oddalonego o moveCoords
+	// Nie bierze pod uwagę zawartości pól pośrednich
+	def moveDirect(game: Game, moveCoords: Tuple2[Int, Int]): Option[Move] = {
+		val dstField = field.relative(moveCoords._1, moveCoords._2)
+		val isInBoard = (dstField.col <= 8 && dstField.row <= 8 && dstField.col >= 1 && dstField.row >= 1)
+		if (!isInBoard)
+			return None
+		val figure: Option[Figure] = game.board.get(dstField)
+		figure match {
+			case None => Some(new Move(field, dstField))
+			case Some(f) if f.color == color => None
+			case Some(f) if f.color != color => Some(new Move(field, dstField, figureRank(f))) 
+		}
+	}
 
 	def getMoves(game: Game) = {
 		List[Move]()		
