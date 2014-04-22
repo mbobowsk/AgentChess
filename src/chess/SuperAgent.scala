@@ -25,6 +25,8 @@ class SuperAgent(val listener: ActorRef, val color: Color) extends Actor {
 				refs.put("p7", context.actorOf(Props(new PawnAgent('g2, color, "p7"))));
 				refs.put("p8", context.actorOf(Props(new PawnAgent('h2, color, "p8"))));
 				refs.put("k", context.actorOf(Props(new KingAgent('e1, color, "k"))));
+				refs.put("n1", context.actorOf(Props(new KnightAgent('b1, color, "n1"))));
+				refs.put("n2", context.actorOf(Props(new KnightAgent('g1, color, "n2"))));
 			}
 			case Black => {
 				refs.put("p1", context.actorOf(Props(new PawnAgent('a7, color, "p1"))));
@@ -36,6 +38,8 @@ class SuperAgent(val listener: ActorRef, val color: Color) extends Actor {
 				refs.put("p7", context.actorOf(Props(new PawnAgent('g7, color, "p7"))));
 				refs.put("p8", context.actorOf(Props(new PawnAgent('h7, color, "p8"))));
 				refs.put("k", context.actorOf(Props(new KingAgent('e8, color, "k"))));
+				refs.put("n1", context.actorOf(Props(new KnightAgent('b8, color, "n1"))));
+				refs.put("n2", context.actorOf(Props(new KnightAgent('g8, color, "n2"))));
 			}
 		}
 		agentsAlive = refs.size
