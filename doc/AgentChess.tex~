@@ -26,7 +26,7 @@ Silnik gry i warstwa graficzna zostaną oparte na istniejących rozwiązaniach.
 Całość zostanie zrealizowana w języku programowania Scala.
 
 \subsection{Figury}
-Dla uporządkowania wiedzy dziedzinowej posługujemy się nazwami figur w wesji polskiej i angielskiej.
+Dla uporządkowania wiedzy dziedzinowej, posługujemy się nazwami figur w wesji polskiej i angielskiej.
 Są to kolejno:
 \begin{itemize}
  \item Pion (ang. Pawn) - porusza się o jedno pole naprzód (ew. o dwa pola na początku), bije tylko po skosie.
@@ -37,27 +37,43 @@ Są to kolejno:
  \item Król (ang. King) - porusza się o jedno pole w dowolnym kierunku.
 \end{itemize}
 
-Figury są identyfikowane wewnątrz programu przy pomocy małej (białe) bądź wielkiej (czarne) litery.
-Dla większości figur identyfikatorem jest pierwsza litera angielskiej nazwy.
-Wyjątek stanowi skoczek, który posługuje się drugą literą (n).
+Pion po dojściu do końca planszy może zamienić się w inną figurę.
+Nie obsługujemy od strony AI roszady i bicia w przelocie (chyba, że ktoś ma ogromną potrzebę to może dopisać).
 
-\section{Opis algorytmu}
-Główną cechą niniejszego algorytmu jest jego zorientowanie na agentowość.
-Bezcelowe jest porównywanie go do algorytmów budujących drzewo rozwiązań, gdyż na pewno są one wydajniejsze.
-Sukcesem projektu będzie stworzenie grywalnego, działającego w rozsądnym czasie programu.
+\section{Uwagi techniczne - przeczytaj zanim zaczniesz kodować}
+Chciałbym zwrócić w tej sekcji uwagę na kilka problemów z którymi miałem do czynienia.
+Po pierwsze - istnieje duża różnica między bibliotekami Scala Actors i Scala Akka, choć na pierwszy rzut oka wyglądają tak samo.
+My korzystamy TYLKO z biblioteki Scala Akka, która od wersji języka 2.11 zastąpi Scala Actors.
+Ponieważ najnowszym wydaniem stabilnym języka Scala jest wersja 2.10 to musiałem ręcznie dodać sporo plików jar do java build path (cały folder /lib w repozytorium).
 
-\subsection{Architektura agentów}
+Korzystałem z IDE Eclipse z wtyczką do języka Scala.
+Nie mogę powiedzieć, żeby ten zestaw działał oszałamiająco dobrze, ale na potrzeby tego projektu wystarcza.
+Trzeba się tylko przyzwyczaić, że czasem pokazuje błędy tam gdzie ich nie ma i dopiero \emph{Project/Clean} załatwia sprawę.
+
+Długo zastanawiałem się jak najlepiej wykorzystać istniejące szachy z książki Grzegorza Balcerka.
+Architektura, którą przyjął autor nie była dla nas z wielu względów korzystna np. logika ruchu poszczególnych figur nie znajdowała się bezpośrednio w klasach tych figur.
+Z drugiej strony głupio było od nowa pisać interfejs graficzny.
+Ostatecznie zdecydowałem się na użycie podstawowych klas (Figure, Field, Game), ale logikę ruchu napisałem jeszcze raz w klasach agentów.
+W ten sposób ruchy gracza są wykonywane tak jak w oryginale.
+
+Ciekawe jest to, że gra w szachy wcale nie kończy się zbiciem króla.
+Ruchy, które pozostawiają własnego króla w sytuacji zagrożenia, nie są w ogóle akceptowane jako poprawne.
+Dlatego nasze AI ogłasza przegraną, kiedy nie może wykonać żadnego poprawnego ruchu.
+
+\section{Architektura agentów}
 Agenci są umieszczeni w architekturze wertykalnej.
-Głównym mózgiem przedsięwzięcia jest super-agent, którego zdaniem jest wysyłanie żądań do agentów podrzędnych i przeprowadzanie wnioskowania dotyczącego wyboru ruchu.
+Najważniejsze decyzje podejmowane są przez super-agenta, którego zdaniem jest wysyłanie żądań do agentów podrzędnych.
 
-Na niższym poziomie w hierarchii znajdują się agenci reprezentujący figury obsługiwane przez komputer.
+Na niższym poziomie w hierarchii znajdują się agenci reprezentujący figury obsługiwane przez nasze AI.
 Można rozważyć również stworzenie agentów dla figur obsługiwanych przez gracza, ale nie wydaje się to w tym momencie zasadne.
-W kolejnych częściach opisany jest szczegółowy protokół komunikacji między agentami.
 
-\subsection{Struktury pomocnicze algorytmu}
-W tej sekcji zawarty jest opis pewnych abstrakcyjnych bytów, na podstawie których przeprowadzane jest wnioskowanie.
+W trakcie kodowania okazało się, że potrzebna jest jeszcze jedna warstwa, łącząca super-agenta z dotychczasowym szkieletem gry.
+Jest nią klasa \emph{Listener}, będąca klasą wewnętrzną \emph{ChessGui}.
 
-\subsubsection{Ocena heurystyczna}
+\section{Struktury pomocnicze algorytmu}
+W tej sekcji zawarty jest opis pewnych abstrakcyjnych bytów, biorących udział we wnioskowaniu.
+
+\subsection{Ocena heurystyczna}
 Każda z figur biorących udział w grze posiada heurystyczną ocenę swojej przydatności, oznaczaną dalej jako H.
 Nie czuję się specjalistą, ale wikipedia proponuje następującą wycenę:
 \begin{itemize}
@@ -69,24 +85,36 @@ Nie czuję się specjalistą, ale wikipedia proponuje następującą wycenę:
 
 Do kompletu dodany zostaje król z wyceną równą np. H=20.
 
-\subsubsection{Mapa ruchu wroga}
-Mapa ruchu wroga ma za zadanie pokazać w łatwo dostępnej formie, gdzie i jakimi figurami może ruszyć się przeciwnik w pewnej konkretnej sytuacji na planszy.
-Zakładam, że bicie jest traktowane w tym przypadku jako normalny ruch.
-Od strony programistycznej mapa ruchu wroga jest mapą, w której kluczem jest pole planszy, a wartością lista identyfikatorów figur, które mogą wykonać ruch na dane pole.
+\subsection{Mapa bicia wroga}
+Mapa bicia wroga pokazuje, które figury AI mogą zostać zbite w następnym wykonywanym przez gracza ruchu.
+Kluczem mapy jest pole planszy, a wartością zmienna boolowska, która jest równa \emph{true} wtedy i tylko wtedy gdy:
+\begin{enumerate}
+ \item Pole jest zajmowane przez figurę należacą do AI.
+ \item Którakolwiek z figur gracza może w następnym ruchu zbić figurę z punktu 1.
+\end{enumerate}
 
-\subsubsection{Mapa wsparcia wroga}
-Wprowadzam relację wsparcia zdefiniowaną w następujący sposób: figura A wspiera figurę B, jeśli w przypadku zbicia B, A może w kolejnym ruchu dokonać bicia na polu zajmowanym wcześniej przez B.
-Mapa wsparcia ma za zadanie zagregować informacje dotyczące wzajemnego położenia figur wroga.
-Kluczem mapy jest identyfikator figury wspieranej, a wartością lista identyfikatorów figur wspierających.
+\subsection{Mapa wsparcia wroga}
+Wprowadzam relację wsparcia zdefiniowaną w następujący sposób: figura A wspiera figurę B, jeśli w przypadku zbicia B, A może w następnym ruchu tego samego gracza, dokonać bicia na polu zajmowanym wcześniej przez B.
+Kluczem mapy jest pole planszy, a wartością zmienna boolowska, która jest równa \emph{true} wtedy i tylko wtedy gdy:
+\begin{enumerate}
+ \item Pole jest zajmowane przez figurę należacą do gracza.
+ \item Którakolwiek z pozostałych figur gracza wspiera figurę z punktu 1.
+\end{enumerate}
 
-\subsection{Faza pierwsza - odpytanie o ruchy}
+\section{Aktualizacja stanu 1}
+Na początku gry tworzeni są agenci odpowiadający za każdą z figur AI.
+Życie agentów kończy się w bliżej nieokreślonej przyszłości, po tym jak zostaną oni zbici przez gracza.
+Z tego powodu, działanie algorytmu rozpoczyna się od sprawdzenia, czy poprzedni ruch gracza nie zakończył się na polu zajmowanym przez jedną z figur AI.
+Odpytanie jest wykonywane przy pomocy komunikatów.
+W przypadku stwierdzenia swojego zgonu, agent figury przesyła stosowny komunikat do super-agenta i kończy swoje działanie.
+
+\section{Faza pierwsza - odpytanie o ruchy}
 Algorytm rozpoczyna super-agent, który zadaje każdemu agentowi podrzędnemu pytanie o możliwe ruchy.
 Odpowiedzią na żądanie jest lista ruchów, które mogą być wykonane zgodnie z zasadami gry.
-W tym przypadku bicie jest również traktowane jako normalny ruch.
+Bicie jest traktowane jako normalny ruch.
 
-Struktura danych reprezentująca ruch powinna zawierać następujące dane:
+Struktura danych reprezentująca ruch zawiera następujące dane:
 \begin{itemize}
- \item Identyfikator figury
  \item Pole początkowe (source)
  \item Pole końcowe (destination)
  \item Wstępną ocenę heurystyczną ruchu
@@ -95,7 +123,7 @@ Struktura danych reprezentująca ruch powinna zawierać następujące dane:
 Wstępna ocena heurystyczna ma domyślnie wartość 0.
 Jedynie w przypadku bicia przyjmuje wartość równą wartości ofiary.
 
-\subsection{Faza druga - ocena ruchów}
+\section{Faza druga - ocena ruchów}
 Każdy ruch podlega ocenie przez wszystkich agentów, wliczając w to agenta zmieniającego położenie.
 Faza oceny pojedynczego ruchu przebiega według następującego schematu:
 \begin{enumerate}
@@ -105,35 +133,22 @@ Faza oceny pojedynczego ruchu przebiega według następującego schematu:
 \end{enumerate}
 
 Agenci podrzędni wyrażają swoją ocenę sytuacji w sposób egoistyczny tzn. nie interesują się pozostałymi agentami.
-Ocena sytuacji jest wyrażana liczbowo i jest sumą dwóch składowych: ofensywnej i defensywnej.
+Ocena sytuacji jest wyrażana liczbowo i jest wypadkową dwóch składowych: ofensywnej i defensywnej.
 
-Składowa ofensywna jest równa najwyższej ocenie figury wroga, znajdującej się w zasięgu rażenia.
-Jeżeli figura wroga jest wspierana przez jakąkolwiek inną figurę, to składową ofensywną pomniejszamy o wartość naszej figury.
+Jeżeli nasza figura jest w danej sytuacji zagrożona, to ocena jest równa ujemnej wartości H naszej figury.
+W przeciwnym przypadku ocena jest równa najwyższej ocenie figury wroga, znajdującej się w zasięgu rażenia naszej figury.
+Jeżeli figura wroga jest wspierana, to składową ofensywną pomniejszamy o wartość naszej figury.
 
-Składowa defensywna jest równa ujemnej wartości naszej figury, w przypadku gdy może ona zostać zbita (wykorzystujemy mapę ruchu wroga).
-Jeśli zagrożenie nie występuje, to składowa defensywna ma wartość 0.
+Końcowa ocena ruchu jest sumą następujących składowych:
+\begin{enumerate}
+ \item Oceny z fazy pierwszej
+ \item Najniższej z ocen agentów
+ \item Średniej ze wszystkich ocen agentów (być może przemnożonej przez jakąś stałą np. 0.5)
+\end{enumerate}
 
-\subsection{Faza trzecia - wybór ruchu}
-Po skompletowaniu ocen cząstkowych, super-agent podejmuje decyzję o wyborze ruchu.
-Całkowita ocena ruchu jest sumą ocen z faz pierwszej i drugiej.
-Wybrany zostaje ruch z najwyższą oceną sumaryczną lub jeden z najlepszych ruchów.
-
-\subsection{Opcjonalne modyfikacje}
-Trudno na etapie planowania ocenić całkowity czas oczekiwania na ruch, ale na pewno nie powinien on przekraczać minuty.
-Jeśli w podstawowym wariancie nie będzie to możliwe, należy ograniczyć liczbę ruchów, podlegających ocenie w fazie drugiej.
-Na przykład po fazie pierwszej można pozostawić 5 najlepszych i 5 losowych ruchów.
-
-Drugą opcjonalną modyfikacją jest dodanie do oceny w fazie trzeciej, średniej z ocen składowych wszystkich agentów.
-Może to spowodować poprawę działania algorytmu, ale równie dobrze może coś popsuć.
-
-\section{Uwagi techniczne - przeczytaj zanim zaczniesz kodować}
-Chciałbym zwrócić w tej sekcji uwagę na kilka ważnych problemów z którymi miałem do czynienia.
-Po pierwsze - istnieje duża różnica między bibliotekami Scala Actors i Scala Akka, choć na pierwszy rzut oka wyglądają tak samo.
-My korzystamy TYLKO z biblioteki Scala Akka, która od wersji języka 2.11 zastąpi Scala Actors.
-Ponieważ najnowszym wydaniem stabilnym języka Scala jest wersja 2.10 to musiałem ręcznie dodać plik akka-actors.jar do java build path projektu.
-
-
-
-
+\section{Faza trzecia - wybór ruchu}
+Po skompletowaniu ocen cząstkowych, super-agent przesyła do obiektu nasłuchującego, posortowaną względem sumarycznej oceny listę ruchów.
+Następnie wykonywany jest najlepszy z ruchów, który nie pozostawia króla w pozycji zagrożenia.
+Jeżeli żaden z ruchów nie spełni tego warunku, to AI ogłosi swoją porażkę.
 
 \end{document}

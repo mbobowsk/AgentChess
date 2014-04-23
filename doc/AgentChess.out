@@ -1,13 +1,12 @@
 \BOOKMARK [1][-]{section.1}{Za\233ozenia wstepne}{}
 \BOOKMARK [2][-]{subsection.1.1}{Figury}{section.1}
-\BOOKMARK [1][-]{section.2}{Opis algorytmu}{}
-\BOOKMARK [2][-]{subsection.2.1}{Architektura agent\363w}{section.2}
-\BOOKMARK [2][-]{subsection.2.2}{Struktury pomocnicze algorytmu}{section.2}
-\BOOKMARK [3][-]{subsubsection.2.2.1}{Ocena heurystyczna}{subsection.2.2}
-\BOOKMARK [3][-]{subsubsection.2.2.2}{Mapa ruchu wroga}{subsection.2.2}
-\BOOKMARK [3][-]{subsubsection.2.2.3}{Mapa wsparcia wroga}{subsection.2.2}
-\BOOKMARK [2][-]{subsection.2.3}{Faza pierwsza - odpytanie o ruchy}{section.2}
-\BOOKMARK [2][-]{subsection.2.4}{Faza druga - ocena ruch\363w}{section.2}
-\BOOKMARK [2][-]{subsection.2.5}{Faza trzecia - wyb\363r ruchu}{section.2}
-\BOOKMARK [2][-]{subsection.2.6}{Opcjonalne modyfikacje}{section.2}
-\BOOKMARK [1][-]{section.3}{Uwagi techniczne - przeczytaj zanim zaczniesz kodowac}{}
+\BOOKMARK [1][-]{section.2}{Uwagi techniczne - przeczytaj zanim zaczniesz kodowac}{}
+\BOOKMARK [1][-]{section.3}{Architektura agent\363w}{}
+\BOOKMARK [1][-]{section.4}{Struktury pomocnicze algorytmu}{}
+\BOOKMARK [2][-]{subsection.4.1}{Ocena heurystyczna}{section.4}
+\BOOKMARK [2][-]{subsection.4.2}{Mapa bicia wroga}{section.4}
+\BOOKMARK [2][-]{subsection.4.3}{Mapa wsparcia wroga}{section.4}
+\BOOKMARK [1][-]{section.5}{Aktualizacja stanu}{}
+\BOOKMARK [1][-]{section.6}{Faza pierwsza - odpytanie o ruchy}{}
+\BOOKMARK [1][-]{section.7}{Faza druga - ocena ruch\363w}{}
+\BOOKMARK [1][-]{section.8}{Faza trzecia - wyb\363r ruchu}{}
