@@ -34,8 +34,7 @@ abstract class FigureAgent(var field: Field, val color: Color, val id: String, v
 	// Nie bierze pod uwagę zawartości pól pośrednich
 	def moveDirect(game: Game, moveCoords: Tuple2[Int, Int]): Option[Move] = {
 		val dstField = field.relative(moveCoords._1, moveCoords._2)
-		val isInBoard = (dstField.col <= 8 && dstField.row <= 8 && dstField.col >= 1 && dstField.row >= 1)
-		if (!isInBoard)
+		if (!dstField.isValid)
 			return None
 		val figure: Option[Figure] = game.board.get(dstField)
 		figure match {
@@ -60,3 +59,4 @@ abstract class FigureAgent(var field: Field, val color: Color, val id: String, v
 	}
 
 }
+

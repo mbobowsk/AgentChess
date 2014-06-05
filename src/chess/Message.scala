@@ -1,5 +1,6 @@
 package chess
 import chess._
+import scala.collection.mutable.Map
 
 sealed class Message
 
@@ -21,5 +22,10 @@ case class EnemyMoveAck extends Message
 case class GetMoves(game: Game) extends Message
 case class ReturnMoves(moves: List[Move]) extends Message
 
+// Faza 2 - ocena ruchu
+case class GetScore(game: Game, beating: Map[Field, Boolean])
+case class ReturnScore(score: Int)
+
 // Wynik działania super agenta
 case class Result(move: List[Move]) extends Message
+
