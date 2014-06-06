@@ -23,7 +23,8 @@ case class GetMoves(game: Game) extends Message
 case class ReturnMoves(moves: List[Move]) extends Message
 
 // Faza 2 - ocena ruchu
-case class GetScore(game: Game, beating: Map[Field, Boolean])
+case class GetScore(board: collection.mutable.Map[Field, Figure],
+		beating: Map[Field, Boolean])
 case class ReturnScore(score: Int)
 
 // Wynik działania super agenta

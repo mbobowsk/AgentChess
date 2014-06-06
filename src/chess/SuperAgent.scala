@@ -5,14 +5,17 @@ import scala.collection.mutable.Buffer
 
 class SuperAgent(val listener: ActorRef, val color: Color) extends Actor {
 
+	type SavedBoard = scala.collection.mutable.Map[Field, Figure];
 	var agentsAlive = 16;
 	val agents: scala.collection.mutable.Map[String, ActorRef] = createFigureAgents();
-	var beating: scala.collection.mutable.Map[Field, Boolean] = createBeatingMap();
-	var beaten = Option[Figure]
-	var moves = List[Move]()
+	var beating: scala.collection.mutable.Map[Field, Boolean] = createBeatingDefaultMap();
+	var beaten : Option[Figure] = None;
+	var moves = List[Move]();
 	var movesReported = 0;
 	var deathsReported = 0;
 	var someoneDied = false;
+	var savedBoard:SavedBoard = scala.collection.mutable.Map[Field, Figure]();
+	var savedMove:Move = null;
 
 	def createFigureAgents() = {
 		val refs = scala.collection.mutable.Map[String, ActorRef]();
@@ -58,43 +61,45 @@ class SuperAgent(val listener: ActorRef, val color: Color) extends Actor {
 		refs
 	}
 
-	def createBeatingDefaultMap() = {
-		var temp = scala.collection.mutable.Map[Field, Boolean]
-		for ( i <- Range(0, 8*8) )
-			temp.update(i, false)
+	def createBeatingDefaultMap() : scala.collection.mutable.Map[Field, Boolean] = {
+		var temp = scala.collection.mutable.Map[Field, Boolean]()
+		var field = Field(1,1)
+		for ( i <- Range(0, 8) )
+			for( j <- Range(0,8))
+				temp.update(field.relative(i, j), false)
 		temp
 	}
 
 	def updateBeatingMap() {
-		game.board foreach { case(field, figure) =>
+		savedBoard foreach { case(field, figure) =>
 			figure match {
 				case _ : King =>
 					val movesTemplate = List((0,1), (0,-1), (1,0),
 						(1,1), (1,-1), (-1,0), (-1,1), (-1,-1))
-					movesTemplate.map(saveMoves(game, field,_)).flatten
+					movesTemplate.map(saveDirect(field,_))
 				case _ : Queen =>
-					saveMoves(game, field, (1,1))
-					saveMoves(game, field, (1,-1))
-					saveMoves(game, field, (-1,1))
-					saveMoves(game, field, (-1,-1))
-					saveMoves(game, field, (0,1))
-					saveMoves(game, field, (1,0))
-					saveMoves(game, field, (-1,0))
-					saveMoves(game, field, (0,-1))
+					saveMoves(field, (1,1))
+					saveMoves(field, (1,-1))
+					saveMoves(field, (-1,1))
+					saveMoves(field, (-1,-1))
+					saveMoves(field, (0,1))
+					saveMoves(field, (1,0))
+					saveMoves(field, (-1,0))
+					saveMoves(field, (0,-1))
 				case _ : Rook =>
-					saveMoves(game, field, (0,1))
-					saveMoves(game, field, (1,0))
-					saveMoves(game, field, (0,-1))
-					saveMoves(game, field, (-1,0))
+					saveMoves(field, (0,1))
+					saveMoves(field, (1,0))
+					saveMoves(field, (0,-1))
+					saveMoves(field, (-1,0))
 				case _ : Bishop =>
-					saveMoves(game, field, (1,1))
-					saveMoves(game, field, (1,-1))
-					saveMoves(game, field, (-1,1))
-					saveMoves(game, field, (-1,-1))
+					saveMoves(field, (1,1))
+					saveMoves(field, (1,-1))
+					saveMoves(field, (-1,1))
+					saveMoves(field, (-1,-1))
 				case _ : Knight =>
 					val movesTemplate = List((2,1), (2,-1), (-2,1), (-2,-1),
 						(1,2), (1,-2), (-1,2), (-1,-2))
-					movesTemplate.map(saveMoves(game,field, _)).flatten
+					movesTemplate.map(saveDirect(field, _))
 				case p : Pawn =>
 					beating(field) = true
 					var rowOffset = 1
@@ -111,36 +116,36 @@ class SuperAgent(val listener: ActorRef, val color: Color) extends Actor {
 					}
 					beating(field.relative(0, rowOffset)) = true
 			}
-
 		}
 	}
 
-	def saveMoves(game: Game, start: Field, direction: Tuple2[Int, Int], iteration: Int = 1) {
-		if(saveDirect(game, start, direction)
-			saveMoves(game, start, direction, iteration + 1)
+	def saveMoves(start: Field, direction: Tuple2[Int, Int], iteration: Int = 1) {
+		if(saveDirect(start, direction))
+			saveMoves(start, direction, iteration + 1)
 	}
 
-	def saveDirect(game: Game, start: Field, direction: Tuple2[Int, Int]) : Boolean = {
+	def saveDirect(start: Field, direction: Tuple2[Int, Int]) : Boolean = {
 		val dstField = start.relative(direction._1, direction._2)
 		if(!dstField.isValid) {
-			false
+			return false
 		} else {
 			beating.update(dstField, true)
-			val figure: Option[Figure] = game.board.get(dstField)
+			val figure: Option[Figure] = savedBoard.get(dstField)
 			figure match {
-				case None: true
-				case Some(f): false
+				case None => return true
+				case Some(f) => return false
 			}
 		}
 	}
 
 	def saveBeaten(where : Field) {
-		beaten = game.board remove where
+		beaten = savedBoard remove where
 	}
 
 	def putBeaten(where : Field) {
 		beaten match {
-			case Some(figure) => game.board(where) = figure
+			case Some(figure) => savedBoard(where) = figure
+			case _ => ;
 		}
 	}
 
@@ -160,6 +165,7 @@ class SuperAgent(val listener: ActorRef, val color: Color) extends Actor {
 			agents.foreach(a => a._2 ! EnemyMove(move))
 		}
 		case MakeMove(game: Game) => {
+			savedBoard = scala.collection.mutable.Map(game.board.toSeq:_*)
 			updateState
 			agents.foreach(a => a._2 ! GetMoves(game))
 		}
@@ -187,19 +193,23 @@ class SuperAgent(val listener: ActorRef, val color: Color) extends Actor {
 					saveBeaten(move.to)
 
 					// Utworzenie mapy bicia i przeslanie do agentow
+					savedMove = move
 					updateBeatingMap()
-					agents.foreach(a => a._2 | GetScore(game, beating))
-
-					//TODO - przeliczenie wyniku
-
-					//Przywracamy poprzedni stan - cofamy ruch
-					putBeaten(move.to)
-					agents.foreach(a => a._2 | FriendlyMove(new Move(move.to, move.from))
-				}
-
-				moves = (moves sortBy (_.score)).reverse
-				listener ! Result(moves)
+					agents.foreach(a => a._2 ! GetScore(savedBoard, beating))
+				})
 			}
+		}
+
+		case ReturnScore(score:Int) => {
+			//TODO - zebranie ocen
+			{
+				//Przywracamy poprzedni stan - cofamy ruch
+				putBeaten(savedMove.to)
+				agents.foreach(a => a._2 ! FriendlyMove(new Move(savedMove.to, savedMove.from)))
+			}
+			//TODO - update score
+			moves = (moves sortBy (_.score)).reverse
+			listener ! Result(moves)
 		}
 	}
 }
