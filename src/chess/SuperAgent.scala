@@ -109,12 +109,6 @@ class SuperAgent(val listener: ActorRef, val color: Color) extends Actor {
 					//Jakiekolwiek bicie
 					beating(field.relative(-1, rowOffset)) = true
 					beating(field.relative(1, rowOffset)) = true
-
-					//Pierwszy ruch?
-					if (field.row == 2 || field.row == 7) {
-						rowOffset *= 2
-					}
-					beating(field.relative(0, rowOffset)) = true
 			}
 		}
 	}
