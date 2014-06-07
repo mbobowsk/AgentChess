@@ -8,8 +8,9 @@ class SuperAgent(val listener: ActorRef, val color: Color) extends Actor {
 	type SavedBoard = scala.collection.mutable.Map[Field, Figure];
 	var agentsAlive = 16;
 	val agents: scala.collection.mutable.Map[String, ActorRef] = createFigureAgents();
-	var beating: scala.collection.mutable.Map[Field, Boolean] = createBeatingDefaultMap();
-	var beaten : Option[Figure] = None;
+	var beatingMap: scala.collection.mutable.Map[Field, Boolean] = createBeatingDefaultMap();
+	var beatenFigure : Option[Figure] = None;
+	var movedFigure : Option[Figure] = None;
 	var moves = List[Move]();
 	var movesReported = 0;
 	var deathsReported = 0;
@@ -101,14 +102,14 @@ class SuperAgent(val listener: ActorRef, val color: Color) extends Actor {
 						(1,2), (1,-2), (-1,2), (-1,-2))
 					movesTemplate.map(saveDirect(field, _))
 				case p : Pawn =>
-					beating(field) = true
+					beatingMap(field) = true
 					var rowOffset = 1
 					if (p.color == Black) {
 						rowOffset = -1
 					}
 					//Jakiekolwiek bicie
-					beating(field.relative(-1, rowOffset)) = true
-					beating(field.relative(1, rowOffset)) = true
+					beatingMap(field.relative(-1, rowOffset)) = true
+					beatingMap(field.relative(1, rowOffset)) = true
 			}
 		}
 	}
@@ -123,7 +124,7 @@ class SuperAgent(val listener: ActorRef, val color: Color) extends Actor {
 		if(!dstField.isValid) {
 			return false
 		} else {
-			beating.update(dstField, true)
+			beatingMap.update(dstField, true)
 			val figure: Option[Figure] = savedBoard.get(dstField)
 			figure match {
 				case None => return true
@@ -132,13 +133,24 @@ class SuperAgent(val listener: ActorRef, val color: Color) extends Actor {
 		}
 	}
 
-	def saveBeaten(where : Field) {
-		beaten = savedBoard remove where
+	def updateBoard() {
+		movedFigure = savedBoard.get(savedMove.from)
+		beatenFigure = savedBoard remove savedMove.to
+		movedFigure match {
+			case Some(f) => savedBoard(savedMove.to) = f
+			//Nie powinno sie zdazyc, ale better safe than sorry
+			case _ => ;
+		}
 	}
 
-	def putBeaten(where : Field) {
-		beaten match {
-			case Some(figure) => savedBoard(where) = figure
+	def restoreBoard() {
+		beatenFigure match {
+			case Some(figure) => savedBoard(savedMove.to) = figure
+			case _ => ;
+		}
+
+		movedFigure match {
+			case Some(figure) => savedBoard(savedMove.from) = figure
 			case _ => ;
 		}
 	}
@@ -148,7 +160,7 @@ class SuperAgent(val listener: ActorRef, val color: Color) extends Actor {
 		movesReported = 0
 		deathsReported = 0
 		someoneDied = false
-		beaten = None
+		beatenFigure = None
 	}
 
 	def receive = {
@@ -184,23 +196,22 @@ class SuperAgent(val listener: ActorRef, val color: Color) extends Actor {
 				moves foreach(move => {
 					//Tymczasowo wykonujemy ruch
 					agents.foreach(a => a._2 ! FriendlyMove(move))
-					saveBeaten(move.to)
 
 					// Utworzenie mapy bicia i przeslanie do agentow
 					savedMove = move
+					updateBoard()
 					updateBeatingMap()
-					agents.foreach(a => a._2 ! GetScore(savedBoard, beating))
+					agents.foreach(a => a._2 ! GetScore(savedBoard, beatingMap))
+					restoreBoard()
+					agents.foreach(a => a._2 ! FriendlyMove(
+												new Move(savedMove.to, savedMove.from)))
 				})
 			}
 		}
 
 		case ReturnScore(score:Int) => {
 			//TODO - zebranie ocen
-			{
-				//Przywracamy poprzedni stan - cofamy ruch
-				putBeaten(savedMove.to)
-				agents.foreach(a => a._2 ! FriendlyMove(new Move(savedMove.to, savedMove.from)))
-			}
+
 			//TODO - update score
 			moves = (moves sortBy (_.score)).reverse
 			listener ! Result(moves)
