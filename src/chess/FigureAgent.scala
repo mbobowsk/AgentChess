@@ -4,21 +4,45 @@ import akka.actor._
 abstract class FigureAgent(var field: Field, val color: Color, val id: String, val selfValue: Int) extends Actor {
 
 	final def receive = {
-	case GetMoves(game: Game) => {
-		sender ! ReturnMoves(getMoves(game))
-	}
-	case FriendlyMove(move: Move) => {
-		if (field == move.from) {
-			field = move.to
+		case GetMoves(game: Game) => {
+			sender ! ReturnMoves(getMoves(game))
 		}
-	}
-	case EnemyMove(move: Move) => {
-		if (field == move.to) {
-			sender ! DeathReport(true, id)
-		} else {
-			sender ! DeathReport(false, id)
+		case FriendlyMove(move: Move) => {
+			if (field == move.from) {
+				field = move.to
+			}
+			sender ! FriendlyMoveAck()
 		}
-	}
+		case EnemyMove(move: Move) => {
+			if (field == move.to) {
+				sender ! DeathReport(true, id)
+			} else {
+				sender ! DeathReport(false, id)
+			}
+		}
+		case GetScore(savedBoard, beatingMap) => {
+			if (beatingMap(field))
+				sender ! ReturnScore(-selfValue)
+			else {
+				val board: Game#Board = scala.collection.immutable.Map(savedBoard.toList:_*)
+				val tempGame: Game = new OngoingGame(null, board, null, null)
+				val myMoves = getMoves(tempGame)
+				if (myMoves.size > 0) {
+					var bestMove = myMoves head;
+					myMoves.foreach(x => {
+						if (x.score > bestMove.score)
+							bestMove = x
+					})
+					if (bestMove.score == 0)
+						sender ! ReturnScore(0)
+					else if (beatingMap(bestMove.to))
+						sender ! ReturnScore(bestMove.score.toInt - selfValue)
+					else
+						sender ! ReturnScore(bestMove.score.toInt)
+				} else
+					sender ! ReturnScore(0)
+			}
+		}
 	}
 
 	final def figureRank(figure: Figure) = figure match {
@@ -34,8 +58,7 @@ abstract class FigureAgent(var field: Field, val color: Color, val id: String, v
 	// Nie bierze pod uwagę zawartości pól pośrednich
 	def moveDirect(game: Game, moveCoords: Tuple2[Int, Int]): Option[Move] = {
 		val dstField = field.relative(moveCoords._1, moveCoords._2)
-		val isInBoard = (dstField.col <= 8 && dstField.row <= 8 && dstField.col >= 1 && dstField.row >= 1)
-		if (!isInBoard)
+		if (!dstField.isValid)
 			return None
 		val figure: Option[Figure] = game.board.get(dstField)
 		figure match {
@@ -60,3 +83,4 @@ abstract class FigureAgent(var field: Field, val color: Color, val id: String, v
 	}
 
 }
+
