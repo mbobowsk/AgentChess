@@ -130,7 +130,6 @@ class SuperAgent(val listener: ActorRef, val color: Color) extends Actor {
 						//Jakiekolwiek bicie
 						beatingMap(field.relative(-1, rowOffset)) = true
 						beatingMap(field.relative(1, rowOffset)) = true
-					case _ => ;
 				}
 			}
 		}
