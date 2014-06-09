@@ -93,43 +93,51 @@ class SuperAgent(val listener: ActorRef, val color: Color) extends Actor {
 		printBoard(savedBoard)
 		savedBoard foreach {
 			case (field, figure) => {
-				figure match {
-					case King(otherColor) =>
-						val movesTemplate = List((0, 1), (0, -1), (1, 0),
-							(1, 1), (1, -1), (-1, 0), (-1, 1), (-1, -1))
-						movesTemplate.map(saveDirect(field, _))
-					case Queen(otherColor) =>
-						saveMoves(field, (1, 1))
-						saveMoves(field, (1, -1))
-						saveMoves(field, (-1, 1))
-						saveMoves(field, (-1, -1))
-						saveMoves(field, (0, 1))
-						saveMoves(field, (1, 0))
-						saveMoves(field, (-1, 0))
-						saveMoves(field, (0, -1))
-					case Rook(otherColor) =>
-						saveMoves(field, (0, 1))
-						saveMoves(field, (1, 0))
-						saveMoves(field, (0, -1))
-						saveMoves(field, (-1, 0))
-					case Bishop(otherColor) =>
-						saveMoves(field, (1, 1))
-						saveMoves(field, (1, -1))
-						saveMoves(field, (-1, 1))
-						saveMoves(field, (-1, -1))
-					case Knight(otherColor) =>
-						val movesTemplate = List((2, 1), (2, -1), (-2, 1), (-2, -1),
-							(1, 2), (1, -2), (-1, 2), (-1, -2))
-						movesTemplate.map(saveDirect(field, _))
-					case Pawn(otherColor) =>
-						//beatingMap(field) = true
-						var rowOffset = 1
-						if (otherColor == Black) {
-							rowOffset = -1
-						}
-						//Jakiekolwiek bicie
-						beatingMap(field.relative(-1, rowOffset)) = true
-						beatingMap(field.relative(1, rowOffset)) = true
+				if(figure.color == color.other) {
+					figure match {
+						case King(otherColor) =>
+							if(otherColor == White)
+								println("white")
+							else if (otherColor == Black)
+								println("black")
+							val movesTemplate = List((0, 1), (0, -1), (1, 0),
+								(1, 1), (1, -1), (-1, 0), (-1, 1), (-1, -1))
+							movesTemplate.map(saveDirect(field, _))
+							println("King")
+						case Queen(otherColor) =>
+							saveMoves(field, (1, 1))
+							saveMoves(field, (1, -1))
+							saveMoves(field, (-1, 1))
+							saveMoves(field, (-1, -1))
+							saveMoves(field, (0, 1))
+							saveMoves(field, (1, 0))
+							saveMoves(field, (-1, 0))
+							saveMoves(field, (0, -1))
+						case Rook(otherColor) =>
+							saveMoves(field, (0, 1))
+							saveMoves(field, (1, 0))
+							saveMoves(field, (0, -1))
+							saveMoves(field, (-1, 0))
+							println("Rook")
+						case Bishop(otherColor) =>
+							saveMoves(field, (1, 1))
+							saveMoves(field, (1, -1))
+							saveMoves(field, (-1, 1))
+							saveMoves(field, (-1, -1))
+						case Knight(otherColor) =>
+							val movesTemplate = List((2, 1), (2, -1), (-2, 1), (-2, -1),
+								(1, 2), (1, -2), (-1, 2), (-1, -2))
+							movesTemplate.map(saveDirect(field, _))
+						case Pawn(otherColor) =>
+							//beatingMap(field) = true
+							var rowOffset = 1
+							if (otherColor == Black) {
+								rowOffset = -1
+							}
+							//Jakiekolwiek bicie
+							beatingMap(field.relative(-1, rowOffset)) = true
+							beatingMap(field.relative(1, rowOffset)) = true
+					}
 				}
 			}
 		}
@@ -156,6 +164,7 @@ class SuperAgent(val listener: ActorRef, val color: Color) extends Actor {
 
 	def updateBoard() {
 		movedFigure = savedBoard.get(savedMove.from)
+		savedBoard remove(savedMove.from)
 		beatenFigure = savedBoard remove savedMove.to
 		movedFigure match {
 			case Some(f) => savedBoard(savedMove.to) = f
@@ -174,6 +183,7 @@ class SuperAgent(val listener: ActorRef, val color: Color) extends Actor {
 			case Some(figure) => savedBoard(savedMove.from) = figure
 			case _ => ;
 		}
+		savedBoard remove(savedMove.to)
 	}
 
 	def updateState = {
@@ -211,7 +221,6 @@ class SuperAgent(val listener: ActorRef, val color: Color) extends Actor {
 							agents.foreach(a => a._2 ! FriendlyMove(savedMove))
 							updateBoard()
 							updateBeatingMap()
-							printMap(beatingMap)
 						} else {
 							moves = (moves sortBy (_.score)).reverse
 							listener ! Result(moves)
@@ -282,22 +291,28 @@ class SuperAgent(val listener: ActorRef, val color: Color) extends Actor {
 	}
 	
 	def printMap(map: scala.collection.mutable.Map[Field, Boolean]) {
-		for (i <- 1 until 9) {
-			for (j <- 1 until 9)
+		for (i <- 8 to 1 by -1) {
+			for (j <- 8 to 1 by -1)
 				if (map(new Field(j, i))) print("1 ")
 				else print("0 ")
 			print("\n")
 		}
+		for (j <- 8 to 1 by -1)
+			print("-")
+		print("\n")
 	}
 	
 	def printBoard(map: scala.collection.mutable.Map[Field, Figure]) {
 		var f: Option[Figure] = None
-		for (i <- 1 until 9) {
-			for (j <- 1 until 9)
+		for (i <- 8 to 1 by -1) {
+			for (j <- 8 to 1 by -1)
 				if ((map.contains(new Field(j, i)))) print(map(new Field(j, i)).symbol + " ")
 				else print("  ")
 			print("\n")
 		}
+		for (j <- 8 to 1 by -1)
+			print("-")
+		print("\n")
 	}
 }
 
