@@ -38,7 +38,7 @@ Są to kolejno:
 \end{itemize}
 
 Pion po dojściu do końca planszy może zamienić się w inną figurę.
-Nie obsługujemy od strony AI roszady i bicia w przelocie (chyba, że ktoś ma ogromną potrzebę to może dopisać).
+Nie obsługujemy od strony AI roszady i bicia w przelocie.
 
 \section{Uwagi techniczne - przeczytaj zanim zaczniesz kodować}
 Chciałbym zwrócić w tej sekcji uwagę na kilka problemów z którymi miałem do czynienia.
@@ -62,10 +62,10 @@ Dlatego nasze AI ogłasza przegraną, kiedy nie może wykonać żadnego poprawne
 
 \section{Architektura agentów}
 Agenci są umieszczeni w architekturze wertykalnej.
-Najważniejsze decyzje podejmowane są przez super-agenta, którego zdaniem jest wysyłanie żądań do agentów podrzędnych.
+Najważniejsze decyzje podejmowane są przez super-agenta, którego zdaniem jest wysyłanie żądań do agentów podrzędnych oraz analiza ich odpowiedzi.
 
 Na niższym poziomie w hierarchii znajdują się agenci reprezentujący figury obsługiwane przez nasze AI.
-Można rozważyć również stworzenie agentów dla figur obsługiwanych przez gracza, ale nie wydaje się to w tym momencie zasadne.
+Wykonują oni niezależnie od siebie zadania obliczeniowe i wysyłają ich wyniki do nadzorcy.
 
 W trakcie kodowania okazało się, że potrzebna jest jeszcze jedna warstwa, łącząca super-agenta z dotychczasowym szkieletem gry.
 Jest nią klasa \emph{Listener}, będąca klasą wewnętrzną \emph{ChessGui}.
@@ -75,7 +75,7 @@ W tej sekcji zawarty jest opis pewnych abstrakcyjnych bytów, biorących udział
 
 \subsection{Ocena heurystyczna}
 Każda z figur biorących udział w grze posiada heurystyczną ocenę swojej przydatności, oznaczaną dalej jako H.
-Nie czuję się specjalistą, ale wikipedia proponuje następującą wycenę:
+Przyjęliśmy rozwiązanie proponowane przez wikipedię:
 \begin{itemize}
  \item H=1 dla piona
  \item H=3 dla skoczka i gońca
@@ -86,22 +86,23 @@ Nie czuję się specjalistą, ale wikipedia proponuje następującą wycenę:
 Do kompletu dodany zostaje król z wyceną równą np. H=20.
 
 \subsection{Mapa bicia wroga}
-Mapa bicia wroga pokazuje, które figury AI mogą zostać zbite w następnym wykonywanym przez gracza ruchu.
-Kluczem mapy jest pole planszy, a wartością zmienna boolowska, która jest równa \emph{true} wtedy i tylko wtedy gdy:
-\begin{enumerate}
- \item Pole jest zajmowane przez figurę należacą do AI.
- \item Którakolwiek z figur gracza może w następnym ruchu zbić figurę z punktu 1.
-\end{enumerate}
+Tutaj pisz Zosiu :)
+%Mapa bicia wroga pokazuje, które figury AI mogą zostać zbite w następnym wykonywanym przez gracza ruchu.
+%Kluczem mapy jest pole planszy, a wartością zmienna boolowska, która jest równa \emph{true} wtedy i tylko wtedy gdy:
+%\begin{enumerate}
+% \item Pole jest zajmowane przez figurę należacą do AI.
+% \item Którakolwiek z figur gracza może w następnym ruchu zbić figurę z punktu 1.
+%\end{enumerate}
 
-\subsection{Mapa wsparcia wroga}
-Wprowadzam relację wsparcia zdefiniowaną w następujący sposób: figura A wspiera figurę B, jeśli w przypadku zbicia B, A może w następnym ruchu tego samego gracza, dokonać bicia na polu zajmowanym wcześniej przez B.
-Kluczem mapy jest pole planszy, a wartością zmienna boolowska, która jest równa \emph{true} wtedy i tylko wtedy gdy:
-\begin{enumerate}
- \item Pole jest zajmowane przez figurę należacą do gracza.
- \item Którakolwiek z pozostałych figur gracza wspiera figurę z punktu 1.
-\end{enumerate}
+%\subsection{Mapa wsparcia wroga}
+%Wprowadzam relację wsparcia zdefiniowaną w następujący sposób: figura A wspiera figurę B, jeśli w przypadku zbicia B, A może w następnym ruchu tego samego gracza, dokonać bicia na polu zajmowanym wcześniej przez B.
+%Kluczem mapy jest pole planszy, a wartością zmienna boolowska, która jest równa \emph{true} wtedy i tylko wtedy gdy:
+%\begin{enumerate}
+% \item Pole jest zajmowane przez figurę należacą do gracza.
+% \item Którakolwiek z pozostałych figur gracza wspiera figurę z punktu 1.
+%\end{enumerate}
 
-\section{Aktualizacja stanu 1}
+\section{Aktualizacja stanu}
 Na początku gry tworzeni są agenci odpowiadający za każdą z figur AI.
 Życie agentów kończy się w bliżej nieokreślonej przyszłości, po tym jak zostaną oni zbici przez gracza.
 Z tego powodu, działanie algorytmu rozpoczyna się od sprawdzenia, czy poprzedni ruch gracza nie zakończył się na polu zajmowanym przez jedną z figur AI.
@@ -109,7 +110,7 @@ Odpytanie jest wykonywane przy pomocy komunikatów.
 W przypadku stwierdzenia swojego zgonu, agent figury przesyła stosowny komunikat do super-agenta i kończy swoje działanie.
 
 \section{Faza pierwsza - odpytanie o ruchy}
-Algorytm rozpoczyna super-agent, który zadaje każdemu agentowi podrzędnemu pytanie o możliwe ruchy.
+Następną  Algorytm rozpoczyna super-agent, który zadaje każdemu agentowi podrzędnemu pytanie o możliwe ruchy.
 Odpowiedzią na żądanie jest lista ruchów, które mogą być wykonane zgodnie z zasadami gry.
 Bicie jest traktowane jako normalny ruch.
 
@@ -133,27 +134,25 @@ Faza oceny pojedynczego ruchu przebiega według następującego schematu:
 \end{enumerate}
 
 Agenci podrzędni wyrażają swoją ocenę sytuacji w sposób egoistyczny tzn. nie interesują się pozostałymi agentami.
-Ocena sytuacji jest wyrażana liczbowo i jest sumą dwóch składowych: ofensywnej i defensywnej.
+Ocena sytuacji jest wyrażana liczbowo i jest wypadkową dwóch składowych: ofensywnej i defensywnej.
 
-Składowa ofensywna jest równa najwyższej ocenie figury wroga, znajdującej się w zasięgu rażenia.
-Jeżeli figura wroga jest wspierana przez jakąkolwiek inną figurę, to składową ofensywną pomniejszamy o wartość naszej figury.
+Jeżeli nasza figura jest w danej sytuacji zagrożona, to ocena jest równa ujemnej wartości H naszej figury.
+W przeciwnym przypadku ocena jest równa najwyższej ocenie figury wroga, znajdującej się w zasięgu rażenia naszej figury.
+Jeżeli figura wroga jest wspierana, to składową ofensywną pomniejszamy o wartość naszej figury.
 
-Składowa defensywna jest równa ujemnej wartości naszej figury, w przypadku gdy może ona zostać zbita (wykorzystujemy mapę ruchu wroga).
-Jeśli zagrożenie nie występuje, to składowa defensywna ma wartość 0.
+Końcowa ocena ruchu jest sumą następujących składowych:
+\begin{enumerate}
+ \item Oceny z fazy pierwszej
+ \item Najniższej z ocen agentów
+ \item Średniej ze wszystkich ocen agentów (być może przemnożonej przez jakąś stałą np. 0.5)
+\end{enumerate}
 
 \section{Faza trzecia - wybór ruchu}
-Po skompletowaniu ocen cząstkowych, super-agent podejmuje decyzję o wyborze ruchu.
-Całkowita ocena ruchu jest sumą ocen z faz pierwszej i drugiej.
-Wybrany zostaje ruch z najwyższą oceną sumaryczną lub jeden z najlepszych ruchów.
+Po skompletowaniu ocen cząstkowych, super-agent przesyła do obiektu nasłuchującego, posortowaną względem sumarycznej oceny listę ruchów.
+Następnie wykonywany jest najlepszy z ruchów, który nie pozostawia króla w pozycji zagrożenia.
+Jeżeli żaden z ruchów nie spełni tego warunku, to AI ogłosi swoją porażkę.
 
-\section{Opcjonalne modyfikacje}
-Trudno na etapie planowania ocenić całkowity czas oczekiwania na ruch, ale na pewno nie powinien on przekraczać minuty.
-Jeśli w podstawowym wariancie nie będzie to możliwe, należy ograniczyć liczbę ruchów, podlegających ocenie w fazie drugiej.
-Na przykład po fazie pierwszej można pozostawić 5 najlepszych i 5 losowych ruchów.
-
-Drugą opcjonalną modyfikacją jest dodanie do oceny w fazie trzeciej, średniej z ocen składowych wszystkich agentów.
-Może to spowodować poprawę działania algorytmu, ale równie dobrze może coś popsuć.
-
-
+Po wyborze ruchu następuje jego ogłoszenie do wiadomości wszystkich agentów.
+Agent, który jest źródłem ruchu dokonuje aktualizacji swojego położenia.
 
 \end{document}

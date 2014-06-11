@@ -38,7 +38,7 @@ Są to kolejno:
 \end{itemize}
 
 Pion po dojściu do końca planszy może zamienić się w inną figurę.
-Nie obsługujemy od strony AI roszady i bicia w przelocie (chyba, że ktoś ma ogromną potrzebę to może dopisać).
+Nie obsługujemy od strony AI roszady i bicia w przelocie.
 
 \section{Uwagi techniczne - przeczytaj zanim zaczniesz kodować}
 Chciałbym zwrócić w tej sekcji uwagę na kilka problemów z którymi miałem do czynienia.
@@ -62,10 +62,10 @@ Dlatego nasze AI ogłasza przegraną, kiedy nie może wykonać żadnego poprawne
 
 \section{Architektura agentów}
 Agenci są umieszczeni w architekturze wertykalnej.
-Najważniejsze decyzje podejmowane są przez super-agenta, którego zdaniem jest wysyłanie żądań do agentów podrzędnych.
+Najważniejsze decyzje podejmowane są przez super-agenta, którego zdaniem jest wysyłanie żądań do agentów podrzędnych oraz analiza ich odpowiedzi.
 
 Na niższym poziomie w hierarchii znajdują się agenci reprezentujący figury obsługiwane przez nasze AI.
-Można rozważyć również stworzenie agentów dla figur obsługiwanych przez gracza, ale nie wydaje się to w tym momencie zasadne.
+Wykonują oni niezależnie od siebie zadania obliczeniowe i wysyłają ich wyniki do nadzorcy.
 
 W trakcie kodowania okazało się, że potrzebna jest jeszcze jedna warstwa, łącząca super-agenta z dotychczasowym szkieletem gry.
 Jest nią klasa \emph{Listener}, będąca klasą wewnętrzną \emph{ChessGui}.
@@ -75,7 +75,7 @@ W tej sekcji zawarty jest opis pewnych abstrakcyjnych bytów, biorących udział
 
 \subsection{Ocena heurystyczna}
 Każda z figur biorących udział w grze posiada heurystyczną ocenę swojej przydatności, oznaczaną dalej jako H.
-Nie czuję się specjalistą, ale wikipedia proponuje następującą wycenę:
+Przyjęliśmy rozwiązanie proponowane przez wikipedię:
 \begin{itemize}
  \item H=1 dla piona
  \item H=3 dla skoczka i gońca
@@ -86,20 +86,21 @@ Nie czuję się specjalistą, ale wikipedia proponuje następującą wycenę:
 Do kompletu dodany zostaje król z wyceną równą np. H=20.
 
 \subsection{Mapa bicia wroga}
-Mapa bicia wroga pokazuje, które figury AI mogą zostać zbite w następnym wykonywanym przez gracza ruchu.
-Kluczem mapy jest pole planszy, a wartością zmienna boolowska, która jest równa \emph{true} wtedy i tylko wtedy gdy:
-\begin{enumerate}
- \item Pole jest zajmowane przez figurę należacą do AI.
- \item Którakolwiek z figur gracza może w następnym ruchu zbić figurę z punktu 1.
-\end{enumerate}
+Tutaj pisz Zosiu :)
+%Mapa bicia wroga pokazuje, które figury AI mogą zostać zbite w następnym wykonywanym przez gracza ruchu.
+%Kluczem mapy jest pole planszy, a wartością zmienna boolowska, która jest równa \emph{true} wtedy i tylko wtedy gdy:
+%\begin{enumerate}
+% \item Pole jest zajmowane przez figurę należacą do AI.
+% \item Którakolwiek z figur gracza może w następnym ruchu zbić figurę z punktu 1.
+%\end{enumerate}
 
-\subsection{Mapa wsparcia wroga}
-Wprowadzam relację wsparcia zdefiniowaną w następujący sposób: figura A wspiera figurę B, jeśli w przypadku zbicia B, A może w następnym ruchu tego samego gracza, dokonać bicia na polu zajmowanym wcześniej przez B.
-Kluczem mapy jest pole planszy, a wartością zmienna boolowska, która jest równa \emph{true} wtedy i tylko wtedy gdy:
-\begin{enumerate}
- \item Pole jest zajmowane przez figurę należacą do gracza.
- \item Którakolwiek z pozostałych figur gracza wspiera figurę z punktu 1.
-\end{enumerate}
+%\subsection{Mapa wsparcia wroga}
+%Wprowadzam relację wsparcia zdefiniowaną w następujący sposób: figura A wspiera figurę B, jeśli w przypadku zbicia B, A może w następnym ruchu tego samego gracza, dokonać bicia na polu zajmowanym wcześniej przez B.
+%Kluczem mapy jest pole planszy, a wartością zmienna boolowska, która jest równa \emph{true} wtedy i tylko wtedy gdy:
+%\begin{enumerate}
+% \item Pole jest zajmowane przez figurę należacą do gracza.
+% \item Którakolwiek z pozostałych figur gracza wspiera figurę z punktu 1.
+%\end{enumerate}
 
 \section{Aktualizacja stanu}
 Na początku gry tworzeni są agenci odpowiadający za każdą z figur AI.
@@ -109,7 +110,7 @@ Odpytanie jest wykonywane przy pomocy komunikatów.
 W przypadku stwierdzenia swojego zgonu, agent figury przesyła stosowny komunikat do super-agenta i kończy swoje działanie.
 
 \section{Faza pierwsza - odpytanie o ruchy}
-Algorytm rozpoczyna super-agent, który zadaje każdemu agentowi podrzędnemu pytanie o możliwe ruchy.
+Następną fazę algorytmu rozpoczyna super-agent, który zadaje każdemu agentowi podrzędnemu pytanie o możliwe ruchy.
 Odpowiedzią na żądanie jest lista ruchów, które mogą być wykonane zgodnie z zasadami gry.
 Bicie jest traktowane jako normalny ruch.
 
@@ -128,7 +129,7 @@ Każdy ruch podlega ocenie przez wszystkich agentów, wliczając w to agenta zmi
 Faza oceny pojedynczego ruchu przebiega według następującego schematu:
 \begin{enumerate}
  \item Super-agent odtwarza stan planszy po wykonaniu ruchu
- \item Super-agent buduje dla nowego stanu mapę ruchu wroga i mapę wsparcia wroga
+ \item Super-agent buduje dla nowego stanu mapę ruchu wroga
  \item Super-agent wysyła do agentów podrzędnych pytanie o subiektywną ocenę swojego położenia
 \end{enumerate}
 
@@ -143,7 +144,7 @@ Końcowa ocena ruchu jest sumą następujących składowych:
 \begin{enumerate}
  \item Oceny z fazy pierwszej
  \item Najniższej z ocen agentów
- \item Średniej ze wszystkich ocen agentów (być może przemnożonej przez jakąś stałą np. 0.5)
+ \item Średniej ze wszystkich ocen agentów
 \end{enumerate}
 
 \section{Faza trzecia - wybór ruchu}
@@ -153,5 +154,17 @@ Jeżeli żaden z ruchów nie spełni tego warunku, to AI ogłosi swoją porażk�
 
 Po wyborze ruchu następuje jego ogłoszenie do wiadomości wszystkich agentów.
 Agent, który jest źródłem ruchu dokonuje aktualizacji swojego położenia.
+
+\section{Wnioski}
+Zaimplementowany model sztucznej inteligencji działa w sposób zgodny z oczekiwaniami.
+Jeżeli gracz popełni błąd, wystawiając jedną ze swoich figur, to AI na pewno to wykorzysta.
+Bardzo rzadko zdarzają się ruchy, których nie da się w logiczny sposób wytłumaczyć.
+
+Wydajność algorytmu również prezentuje się zadowalająco.
+Na średniej jakości komputerze stacjonarnym (Dual Core 2600MHz, 4GB RAM) wnioskowanie trwa mniej niż pięc sekund.
+
+Niewątpliwą wadą sztucznej inteligencji jest brak zaprogramowanych schematów rozpoczęcia partii, czego konsekwencją jest wykonywanie losowych ruchów.
+Doświadczony gracz na pewno uzyska w pierwszych kilku ruchach dużą przewagę.
+Z drugiej strony przy mniejszej liczbie figur, AI staje się całkiem skuteczne w pogoni za wrogim królem.
 
 \end{document}
