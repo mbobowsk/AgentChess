@@ -86,21 +86,15 @@ Przyjęliśmy rozwiązanie proponowane przez wikipedię:
 Do kompletu dodany zostaje król z wyceną równą np. H=20.
 
 \subsection{Mapa bicia wroga}
-Tutaj pisz Zosiu :)
-%Mapa bicia wroga pokazuje, które figury AI mogą zostać zbite w następnym wykonywanym przez gracza ruchu.
-%Kluczem mapy jest pole planszy, a wartością zmienna boolowska, która jest równa \emph{true} wtedy i tylko wtedy gdy:
-%\begin{enumerate}
-% \item Pole jest zajmowane przez figurę należacą do AI.
-% \item Którakolwiek z figur gracza może w następnym ruchu zbić figurę z punktu 1.
-%\end{enumerate}
+Mapa bicia wroga pokazuje, które figury AI mogą zostać zbite w następnym wykonywanym przez gracza ruchu.
+Kluczem mapy jest pole planszy, a wartością zmienna boolowska, która jest równa \emph{true} wtedy i tylko wtedy gdy figura należąca do gracza może wykonać ruch na dane pole.
+Oznacza to dla figur AI możliwość zbicia na każdym polu oznaczonym jako \emph{true}.
 
-%\subsection{Mapa wsparcia wroga}
-%Wprowadzam relację wsparcia zdefiniowaną w następujący sposób: figura A wspiera figurę B, jeśli w przypadku zbicia B, A może w następnym ruchu tego samego gracza, dokonać bicia na polu zajmowanym wcześniej przez B.
-%Kluczem mapy jest pole planszy, a wartością zmienna boolowska, która jest równa \emph{true} wtedy i tylko wtedy gdy:
-%\begin{enumerate}
-% \item Pole jest zajmowane przez figurę należacą do gracza.
-% \item Którakolwiek z pozostałych figur gracza wspiera figurę z punktu 1.
-%\end{enumerate}
+W mapie tej dodano dodatkową informację - czy dane pole zajmowane przez figurę przeciwnika jest wspierane przez inną figurę(y).
+Jest to istotne z punktu widzenia figury bijącej, gdyż może oznaczać natychmiastową "zemstę" ze strony przeciwnika.
+Uzyskano to poprzez rozszerzenie warunku oznaczania pól w mapie bicia na \emph{true} - w momencie napotkania przyjaznej figury oznaczanie zostaje zakończone,
+lecz w przeciwieństwie do zwykłej mapy bicia, pole jest też ustawione na \emph{true}.
+W ten sposób łączy się informację o polu bitym oraz o polu wspieranym.  
 
 \section{Aktualizacja stanu}
 Na początku gry tworzeni są agenci odpowiadający za każdą z figur AI.
